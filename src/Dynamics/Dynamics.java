@@ -50,6 +50,8 @@ public class Dynamics
 	
 	// Just debug
 	private Debug debug;
+	
+	// Saving data to file
 	private Save s;
 	
 	// ~ CONSTRUCTORS ~
@@ -82,7 +84,7 @@ public class Dynamics
 	}
 
 	// Constructor #2
-	public Dynamics(Network network, double pNewMessage) {this(network, 12, pNewMessage);}
+	public Dynamics(Network network, double pNewMessage) {this(network, 100, pNewMessage);}
 	
 	// Constructor #3
 	public Dynamics(Network network) {this(network, 12, 0.005);}
