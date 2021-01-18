@@ -16,6 +16,29 @@ public class Experiments
 		d = new Debug();
 	}
 	
+	public void speedTest() {
+		int N = 10000;
+		int k = 6;
+		int n = 1000000;
+		int dimOpinion = 100;
+		double pEdit = 0.05;
+		double pNewMessage = 0.1;
+		int avg = 1;
+		
+		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		dyn.setSaveFile("test/raw_data.txt");
+		dyn.saveHeader();
+		
+		for(int i=0; i<avg; i++) {
+			net = new ScaleFreeNetwork(N, k/2);
+			dyn.setNewNetwork(net);
+			dyn.setInitialConditions(net, 0.2);
+			dyn.run(n, pEdit, i+1, avg, "elo");
+		}
+		dyn.closeSaveFile();
+	}
+	
 	public void test() {
 		int N = 200;
 		int k = 6;

@@ -9,6 +9,7 @@ import Main.Save;
 import Networks.Network;
 import Networks.Node;
 import ProgramingTools.Debug;
+import ProgramingTools.Time;
 
 public class Dynamics 
 {	
@@ -54,6 +55,8 @@ public class Dynamics
 	// Saving data to file
 	private Save s;
 	
+	private Time tajm;
+	
 	// ~ CONSTRUCTORS ~
 	// Constructor #1
 	public Dynamics(Network network, int lenghtOfOpinionVector, double pNewMessage)
@@ -81,6 +84,8 @@ public class Dynamics
 		setInitialConditions();
 		
 		debug = new Debug(0);
+		tajm = new Time(8);
+		tajm.setNames(new String[] {"Send rnd message", "Sorting by time", "Already shared", "Cosine", "Delete", "Add", "Change", "Save"});
 	}
 
 	// Constructor #2
@@ -336,20 +341,26 @@ public class Dynamics
 		
 		// Sends new message to the network
 		if(rnd.nextDouble() < pNewMessage) {
+			tajm.startTimer();
 			sendRandomMessage(rnd.nextInt(N), time);
 			
 			save(s, repetition, type);
+			tajm.pauseTimer(0);
 		} else { // Share message
+			tajm.startTimer();
 			neighborMessages = sortByTime(getNeighborMessages(node)); // gets all neighbor messages and sorts them by time
+			tajm.pauseTimer(1);
 			// Checks if this message was already shared (by ID)
 			// this loop is for all messages shared by node's neighbors
 			for(int i=0; i<neighborMessages.size(); i++) {
+				tajm.startTimer();
 				alreadyShared = alreadyShared(getNodeSharedIds(node), neighborMessages.get(i));
-				
+				tajm.pauseTimer(2);
 				// If it wasn't shared go to the next condition
 				if(!alreadyShared) {
+					tajm.startTimer();
 					cosineSimilarity = cosineSimilarity(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes());
-					
+					tajm.pauseTimer(3);
 					// If it is above threshold, share this message
 					if(cosineSimilarity > getNodeThreshold(node)) {
 						// Message can be edit before sharing
@@ -361,20 +372,24 @@ public class Dynamics
 							// Delete information
 							// if of curse length of the message is greater than 1
 							if(randomChance < pDeleteOneBit && neighborMessages.get(i).getMessageContentAndIndexes()[0].length > 1) {
+								tajm.startTimer();
 								newContent = deleteOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
 								edit = "del" + editID;
+								tajm.pauseTimer(4);
 							}
-							
 							// Add new information
 							else if(randomChance < pDeleteOneBit + pAddOneBit) {
+								tajm.startTimer();
 								newContent = addOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
 								edit = "add" + editID;
+								tajm.pauseTimer(5);
 							}
-							
 							// Change information
 							else if (randomChance <= pDeleteOneBit + pAddOneBit + pChangeOneBit) {
+								tajm.startTimer();
 								newContent = changeOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
 								edit = "chg" + editID;
+								tajm.pauseTimer(6);
 							}
 							
 							// Else throw an error
@@ -382,13 +397,14 @@ public class Dynamics
 								throw new Error("Something wrong with probabilities of changing, deleting and adding new pice of information.");
 						}
 						else newContent = neighborMessages.get(i).getMessageContentAndIndexes().clone();
-						
+						tajm.startTimer();
 						messages.add(new Message(newContent.clone(), time, new int[] {i, node}, neighborMessages.get(i).getId()));
 						getLastMessage().addEdit(neighborMessages.get(i).getEdit());
 						if(edit != "") getLastMessage().addEdit(edit);
 						setMessage(node, getLastMessage());
 						
 						save(s, repetition, type);
+						tajm.pauseTimer(7);
 						break;
 					}
 				}
@@ -405,6 +421,8 @@ public class Dynamics
 			oneStep(i+1, pEdit, repetition, type);
 			if((i+1)%1000 == 0) debug.progressSimple(repetition-1, 0, maxRepetitions, i, 0, maxTime);
 		}
+		
+		tajm.printTimeResults();
 	}
 	
 	//public void run(int maxTime, int repetition, int maxRepetitions) {run(maxTime, 0.0, repetition, maxRepetitions);}

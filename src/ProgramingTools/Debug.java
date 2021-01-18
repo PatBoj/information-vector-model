@@ -37,7 +37,7 @@ public class Debug
 	public void stopTimer() {stopTime = System.currentTimeMillis();}
 	
 	// Converts milliseconds to time format: 00:00:00
-	private String convertTime(long miliseconds) {
+	public String convertTime(long miliseconds) {
 		long second = (miliseconds / 1000) % 60;
 		long minute = (miliseconds / (1000 * 60)) % 60;
 		long hour = (miliseconds / (1000 * 60 * 60)) % 24;
