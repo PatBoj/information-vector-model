@@ -95,6 +95,8 @@ public class Dynamics
 	// ~ METHODS ~
 	
 	// Cosine similarity
+	// the message[0] is the message nad
+	// message[1] is for indexes in opinion vector
 	private double cosineSimilarity(int[] opinion, int[][] message) {
 		
 		double lOpinion = 0;
@@ -107,6 +109,7 @@ public class Dynamics
 			dotProduct += opinion[message[1][i]] * message[0][i];
 		}
 		
+		// when agent has neutral opinion on something it's randomly post it
 		if(lOpinion == 0 || lMessage == 0) return rnd.nextDouble();
 		else return dotProduct/Math.sqrt(lOpinion * lMessage);
 	}
@@ -148,6 +151,7 @@ public class Dynamics
 	// Gets last shared message
 	private Message getLastMessage() {return messages.get(messages.size()-1);}
 	
+	// Sets initial opions for every agent
 	private void setInitialOpinions(Network net) {
 		int[] tempOpinion = new int[D];
 		int tempSumOpinion;
