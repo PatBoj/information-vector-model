@@ -151,7 +151,7 @@ public class Dynamics
 	// Gets last shared message
 	private Message getLastMessage() {return messages.get(messages.size()-1);}
 	
-	// Sets initial opions for every agent
+	// Sets initial opinions for every agent
 	private void setInitialOpinions(Network net) {
 		int[] tempOpinion = new int[D];
 		int tempSumOpinion;
@@ -172,21 +172,21 @@ public class Dynamics
 	}
 	
 	// Sets random opinions and given cosine threshold to all nodes to given network
-		public void setInitialConditions(Network net, double threshold) {
-			setInitialOpinions(net);
+	public void setInitialConditions(Network net, double threshold) {
+		setInitialOpinions(net);
 			
-			//Sets random cosine threshold to all nodes
-			for(int j=0; j<N; j++) 
-				net.getNode(j).setThreshold(threshold);
-		}
+		//Sets random cosine threshold to all nodes
+		for(int j=0; j<N; j++) 
+			net.getNode(j).setThreshold(threshold);
+	}
 	
-	// Sets random opinions and cosine threshold to all nodes to given network
+	// Sets random opinions and random cosine threshold to all nodes to given network
 	public void setInitialConditions(Network net) {
 		setInitialOpinions(net);
 		
 		//Sets random cosine threshold to all nodes
 		for(int j=0; j<N; j++) 
-			net.getNode(j).setThreshold(2*rnd.nextDouble()-1);
+			net.getNode(j).setThreshold(2 * rnd.nextDouble() - 1);
 	}
 	
 	// Sets random opinions and cosine threshold to all nodes to network in this class
@@ -225,10 +225,11 @@ public class Dynamics
 			if(length(messageContent) != 0) zeroLength = false;
 		}
 		
-		messages.add(new Message(new int[][] {messageContent, tempIndexes}, time, sourceNode, nMsg));
+		messages.add(new Message(new int[][] {messageContent.clone(), tempIndexes.clone()}, time, sourceNode, nMsg));
 		setMessage(sourceNode, getLastMessage());
 	}
 	
+	// Checks if message is the same as node opinion
 	private boolean isIdentical(int[] nodeOpinion, int[][] content) {	
 		for(int i=0; i<content[0].length; i++)
 			if(nodeOpinion[content[1][i]] != content[0][i])
@@ -246,6 +247,7 @@ public class Dynamics
 		return false;
 	}*/
 	
+	// Checks if given message was already shared by node
 	private boolean alreadyShared(ArrayList<Integer> sendByNode, Message neighborMessage) {		
 		for(int i=0; i<sendByNode.size(); i++)
 			if(sendByNode.get(i).equals(neighborMessage.getId().get(0)))
@@ -325,8 +327,8 @@ public class Dynamics
 	
 	// One time step
 	private void oneStep(int time, double pEdit, int repetition, String type) {
-		int node = rnd.nextInt(N);
-		ArrayList<Message> neighborMessages;	
+		int node = rnd.nextInt(N); // pick random node from the network
+		ArrayList<Message> neighborMessages; // all neighbors messages
 		boolean alreadyShared; // true if message with this ID was shared by agent
 		double cosineSimilarity; // cosine similarity between message and node opinion
 		int[][] newContent; // new message content
@@ -337,11 +339,10 @@ public class Dynamics
 			sendRandomMessage(rnd.nextInt(N), time);
 			
 			save(s, repetition, type);
-		}
-		// Share message
-		else {
+		} else { // Share message
 			neighborMessages = sortByTime(getNeighborMessages(node)); // gets all neighbor messages and sorts them by time
 			// Checks if this message was already shared (by ID)
+			// this loop is for all messages shared by node's neighbors
 			for(int i=0; i<neighborMessages.size(); i++) {
 				alreadyShared = alreadyShared(getNodeSharedIds(node), neighborMessages.get(i));
 				
@@ -352,17 +353,16 @@ public class Dynamics
 					// If it is above threshold, share this message
 					if(cosineSimilarity > getNodeThreshold(node)) {
 						// Message can be edit before sharing
+						// but if it's matching the node's opinion it shouldn't be changed
 						if(!isIdentical(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()) && rnd.nextDouble() < pEdit) {
 							double randomChance = rnd.nextDouble();
 							editID++;
 							
 							// Delete information
-							if(randomChance < pDeleteOneBit) {
-								if(neighborMessages.get(i).getMessageContentAndIndexes()[0].length > 1) {
-									newContent = deleteOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
-									edit = "del" + editID;
-								}
-								else newContent = neighborMessages.get(i).getMessageContentAndIndexes().clone();
+							// if of curse length of the message is greater than 1
+							if(randomChance < pDeleteOneBit && neighborMessages.get(i).getMessageContentAndIndexes()[0].length > 1) {
+								newContent = deleteOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
+								edit = "del" + editID;
 							}
 							
 							// Add new information

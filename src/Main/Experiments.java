@@ -16,6 +16,29 @@ public class Experiments
 		d = new Debug();
 	}
 	
+	public void test() {
+		int N = 200;
+		int k = 6;
+		int n = 100;
+		int dimOpinion = 100;
+		double pEdit = 0.05;
+		double pNewMessage = 0.1;
+		int avg = 2;
+		
+		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		dyn.setSaveFile("test/raw_data.txt");
+		dyn.saveHeader();
+		
+		for(int i=0; i<avg; i++) {
+			net = new ScaleFreeNetwork(N, k/2);
+			dyn.setNewNetwork(net);
+			dyn.setInitialConditions(net, 0.2);
+			dyn.run(n, pEdit, i, avg, "elo");
+		}
+		dyn.closeSaveFile();
+	}
+	
 	public void popularity() {
 		int N = 200;
 		int k = 6;
@@ -29,7 +52,7 @@ public class Experiments
 		
 		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
-		dyn.setSaveFile("Results\\12_01_2021\\none_th.txt");		
+		dyn.setSaveFile("results\\12_01_2021\\none_th.txt");		
 		dyn.saveHeader();
 		
 		for(int j=0; j<th.length; j++) {
