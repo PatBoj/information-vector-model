@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 import Dynamics.Dynamics;
@@ -24,15 +25,21 @@ public class Test
 	}
 	
 	public void test() {
-		final Object[][] table = new String[4][];
-		table[0] = new String[] { "foo", "bar", "baz" };
-		table[1] = new String[] { "bar2", "foo2", "baz2" };
-		table[2] = new String[] { "baz3", "bar3", "foo3" };
-		table[3] = new String[] { "foo4", "bar4", "baz4" };
-
-		for (final Object[] row : table) {
-		    System.out.format("%-20s %s %s", row);
-		    System.out.println();
-		}
+		ArrayList<Integer> test = new ArrayList<Integer>();
+		
+		test.add(10);
+		test.add(5);
+		test.add(2);
+		test.add(4);
+		test.add(15);
+		
+		for(int i : test)
+			System.out.print(i + "\t");
+		System.out.println();
+		
+		Collections.sort(test);
+		for(int i : test)
+			System.out.print(i + "\t");
+		System.out.println();
 	}
 }

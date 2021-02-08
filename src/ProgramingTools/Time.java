@@ -36,6 +36,22 @@ public class Time {
 		d = new Debug(0);
 	}
 	
+	public Time(String[] names) {
+		N = names.length;
+		
+		times = new Long[N];
+		codeRun = new int[N];
+		this.names = new String[N];
+		
+		for(int i=0; i<N; i++) {
+			times[i] = (long) 0;
+			codeRun[i] = 0;
+			this.names[i] = names[i];
+		}
+		
+		d = new Debug(0);
+	}
+	
 	// Default constructor
 	public Time() {this(1);}
 	
