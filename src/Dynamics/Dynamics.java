@@ -232,6 +232,7 @@ public class Dynamics
 		
 		messages.add(new Message(new int[][] {messageContent.clone(), tempIndexes.clone()}, time, sourceNode, nMsg));
 		setMessage(sourceNode, getLastMessage());
+		setDashboard(sourceNode, getLastMessage());
 	}
 	
 	// Checks if message is the same as node opinion
@@ -333,7 +334,7 @@ public class Dynamics
 	// One time step
 	private void oneStep(int time, double pEdit, int repetition, String type) {
 		int node = rnd.nextInt(N); // pick random node from the network
-		ArrayList<Message> neighborMessages; // all neighbors messages
+		//ArrayList<Message> neighborMessages; // all neighbors messages
 		boolean alreadyShared; // true if message with this ID was shared by agent
 		double cosineSimilarity; // cosine similarity between message and node opinion
 		int[][] newContent; // new message content
@@ -344,36 +345,36 @@ public class Dynamics
 			sendRandomMessage(rnd.nextInt(N), time);
 			save(s, repetition, type);
 		} else { // Share message
-			neighborMessages = sortByTime(getNeighborMessages(node)); // gets all neighbor messages and sorts them by time
-			// Checks if this message was already shared (by ID)
+			//neighborMessages = sortByTime(getNeighborMessages(node)); // gets all neighbor messages and sorts them by time
+			// Checks if the last neighbor message is similar to the node's opinion vector
 			// this loop is for all messages shared by node's neighbors
-			for(int i=0; i<neighborMessages.size(); i++) {
-				alreadyShared = alreadyShared(getNodeSharedIds(node), neighborMessages.get(i));
-				// If it wasn't shared go to the next condition
-				if(!alreadyShared) {
-					cosineSimilarity = cosineSimilarity(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes());
-					// If it is above threshold, share this message
-					if(cosineSimilarity > getNodeThreshold(node)) {
+			for(int i=getDashboardSize(node) - 1; i>=0; i--) {
+				cosineSimilarity = cosineSimilarity(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes());
+				// If the agent like is it goes to next condition
+				if(cosineSimilarity > getNodeThreshold(node)) {
+					alreadyShared = alreadyShared(getNodeSharedIds(node), getDashboard(node).get(i));
+					// Checks if this message was already shared (by ID)
+					if(!alreadyShared) {
 						// Message can be edit before sharing
 						// but if it's matching the node's opinion it shouldn't be changed
-						if(!isIdentical(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()) && rnd.nextDouble() < pEdit) {
+						if(!isIdentical(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()) && rnd.nextDouble() < pEdit) {
 							double randomChance = rnd.nextDouble();
 							editID++;
 							
 							// Delete information
 							// if of curse length of the message is greater than 1
-							if(randomChance < pDeleteOneBit && neighborMessages.get(i).getMessageContentAndIndexes()[0].length > 1) {
-								newContent = deleteOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
+							if(randomChance < pDeleteOneBit && getDashboard(node).get(i).getMessageContentAndIndexes()[0].length > 1) {
+								newContent = deleteOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
 								edit = "del" + editID;
 							}
 							// Add new information
 							else if(randomChance < pDeleteOneBit + pAddOneBit) {
-								newContent = addOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
+								newContent = addOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
 								edit = "add" + editID;
 							}
 							// Change information
 							else if (randomChance <= pDeleteOneBit + pAddOneBit + pChangeOneBit) {
-								newContent = changeOneBit(getNodeOpinion(node), neighborMessages.get(i).getMessageContentAndIndexes()).clone();
+								newContent = changeOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
 								edit = "chg" + editID;
 							}
 							
@@ -381,11 +382,12 @@ public class Dynamics
 							else 
 								throw new Error("Something wrong with probabilities of changing, deleting and adding new pice of information.");
 						}
-						else newContent = neighborMessages.get(i).getMessageContentAndIndexes().clone();
-						messages.add(new Message(newContent.clone(), time, new int[] {i, node}, neighborMessages.get(i).getId()));
-						getLastMessage().addEdit(neighborMessages.get(i).getEdit());
+						else newContent = getDashboard(node).get(i).getMessageContentAndIndexes().clone();
+						messages.add(new Message(newContent.clone(), time, new int[] {i, node}, getDashboard(node).get(i).getId()));
+						getLastMessage().addEdit(getDashboard(node).get(i).getEdit());
 						if(edit != "") getLastMessage().addEdit(edit);
 						setMessage(node, getLastMessage());
+						setDashboard(node, getLastMessage());
 						
 						save(s, repetition, type);
 						break;
@@ -502,6 +504,12 @@ public class Dynamics
 		getNode(i).setMessage(msg);
 	}
 	
+	public void setSharedMessage(int i, Message msg) {
+		if (i < 0 || i > N)
+			throw new Error("Indexes out of range.");
+		getNode(i).setSharedMessage(msg);
+	}
+	
 	// Set new network to the dynamics
 	public void setNewNetwork(Network network) {
 		this.network = network;
@@ -514,6 +522,19 @@ public class Dynamics
 	
 	public void setProbabilityNewMessage(double pNewMessage) {this.pNewMessage = pNewMessage;}
 	public void setSaveFile(String path) {s = new Save(path);}
+	
+	// Add message to the every neighbor dashboard
+	public void setDashboard(int i, Message msg) {
+		if (i < 0 || i > N)
+			throw new Error("Index out of range.");
+		int connectionIndex = -1;
+		
+		for(int j=0; j<getNodeDegree(i); j++) {
+			connectionIndex = getNode(i).getConnection(j)[0] != i ? 0 : 1;
+			//System.out.println(i + "\t" + getNode(i).getConnection(j)[connectionIndex] + "\t" + getNode(i).getConnection(j)[connectionIndex]);
+			setSharedMessage(getNode(i).getConnection(j)[connectionIndex], msg);
+		}
+	}
 	
 	// ~ GETTERS ~
 	
@@ -552,4 +573,6 @@ public class Dynamics
 	public Node getNode(int i) {return network.getNode(i);}
 	public String getTopologyType() {return network.getTopologyType();}
 	public double getThreshold() {return network.getNode(0).getCosineThreshold();}
+	public int getDashboardSize(int i) {return network.getNode(i).getNodeDashboard().size();}
+	public ArrayList<Message> getDashboard(int i) {return network.getNode(i).getNodeDashboard();}
 }

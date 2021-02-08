@@ -80,19 +80,23 @@ public class Debug
 	
 	// Shows progress of one loop
 	public void progress(int i, int iMin, int iMax) {
-		times.add(System.currentTimeMillis() - startLoopTime);
-		for(int k=0; k<times.size()-1; k++) {
-			times.set(times.size()-1, times.get(times.size()-1) - times.get(k));
-		}
+		
+		int N = times.size();
+		
+		if(N == 0)
+			times.add(System.currentTimeMillis() - startLoopTime);
+		else
+			times.add(System.currentTimeMillis() - startLoopTime - times.get(N-1));
+		
 		Collections.sort(times);
 		
 		progress = (double)(i-iMin+1)/(iMax-iMin);
 		
 		System.out.println("Progress: " + c(progress*100, 2) + "%, loops " + (i+1) + "\\" + iMax + ".");
-		/*System.out.println("Time left: " + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))) + "\n");*/
+		System.out.println("Estimated time left: " + 
+				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))));
+		System.out.println("This iteration took: " + convertTime(times.get(N)));
 		
-		System.out.println("Time left: ");
 		System.out.println("  - minimum: \t" + 
 				convertTime((long)((1-progress) * (iMax-iMin) * getMinimum(times))));
 		System.out.println("  - Q1: \t" + 

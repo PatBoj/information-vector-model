@@ -26,6 +26,9 @@ public class Node
 	// Messages that this node shared
 	private ArrayList<Message> messages;
 	
+	// Messages that will appear on this node's dashboard
+	private ArrayList<Message> sharedMessages;
+	
 	// Cosine threshold
 	private double cosineThreshold;
 	
@@ -44,6 +47,7 @@ public class Node
 		ids = new ArrayList<Integer>();
 		links = new ArrayList<Link>();
 		messages = new ArrayList<Message>();
+		sharedMessages = new ArrayList<Message>();
 		component = -1;
 		cosineThreshold = -2;
 	}
@@ -58,6 +62,9 @@ public class Node
 		messages = new ArrayList<Message>();
 		for(Message msg : node.messages)
 			messages.add(new Message(msg));
+		sharedMessages = new ArrayList<Message>();
+		for(Message msg : node.sharedMessages)
+			sharedMessages.add(new Message(msg));
 		this.cosineThreshold = node.cosineThreshold;
 		ids = new ArrayList<Integer>();
 		for(int id : node.ids)
@@ -136,12 +143,14 @@ public class Node
 	
 	// ~ SET ~
 	public void setNodeOpinion(int[] nodeOpinion) {this.nodeOpinion = nodeOpinion;}
-	public void setMessage(Message msg) {messages.add(new Message(msg)); ids.add(msg.getId().get(0));}
+	public void setMessage(Message msg) {messages.add(msg); ids.add(msg.getId().get(0));}
+	public void setSharedMessage(Message msg) {sharedMessages.add(msg);}
 	public void setThreshold(double cosineThreshold) {this.cosineThreshold = cosineThreshold;}
 		
 	// ~ GETTERS ~
 	public int[] getNodeOpinion() {return nodeOpinion;}
 	public ArrayList<Message> getAllNodeMessages() {return messages;}
+	public ArrayList<Message> getNodeDashboard() {return sharedMessages;}
 	public ArrayList<Integer> getSharedIds() {return ids;}
 	public double getCosineThreshold() {return cosineThreshold;}
 }
