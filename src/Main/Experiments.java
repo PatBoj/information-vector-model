@@ -7,6 +7,7 @@ import Networks.LatticeNetwork;
 import Networks.RandomGraph;
 import Networks.ScaleFreeNetwork;
 import ProgramingTools.Debug;
+import ProgramingTools.Time;
 
 public class Experiments 
 {
@@ -23,18 +24,20 @@ public class Experiments
 		int dimOpinion = 100;
 		double pEdit = 0.05;
 		double pNewMessage = 0.1;
-		int avg = 1;
+		int avg = 2;
 		
 		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
 		dyn.setSaveFile("test/raw_data.txt");
 		dyn.saveHeader();
 		
+		d.startLoopTimer();
 		for(int i=0; i<avg; i++) {
 			net = new ScaleFreeNetwork(N, k/2);
 			dyn.setNewNetwork(net);
 			dyn.setInitialConditions(net, 0.2);
 			dyn.run(n, pEdit, i+1, avg, "elo");
+			d.progress(i, 0, avg);
 		}
 		dyn.closeSaveFile();
 	}
@@ -75,7 +78,7 @@ public class Experiments
 		
 		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
-		dyn.setSaveFile("results\\12_01_2021\\none_th.txt");		
+		dyn.setSaveFile("results\\08_02_2021\\none_th.txt");		
 		dyn.saveHeader();
 		
 		for(int j=0; j<th.length; j++) {
@@ -90,7 +93,7 @@ public class Experiments
 		
 		ScaleFreeNetwork net2 = new ScaleFreeNetwork(N, k/2);
 		Dynamics dyn2 = new Dynamics(net2, dimOpinion, pNewMessage);
-		dyn2.setSaveFile("Results\\12_01_2021\\all_th.txt");
+		dyn2.setSaveFile("Results\\08_02_2021\\all_th.txt");
 		dyn2.saveHeader();
 		
 		for(int j=0; j<th.length; j++) {

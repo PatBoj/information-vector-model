@@ -399,12 +399,11 @@ public class Dynamics
 		sendRandomMessage(rnd.nextInt(N), 0);
 		
 		save(s, repetition, type);
-		debug.startLoopTimer();
+		//debug.startLoopTimer();
 		for(int i=0; i<maxTime; i++) {
 			oneStep(i+1, pEdit, repetition, type);
-			if((i+1)%1000 == 0) debug.progressSimple(repetition-1, 0, maxRepetitions, i, 0, maxTime);
+			//if((i+1)%1000 == 0) debug.progressSimple(repetition-1, 0, maxRepetitions, i, 0, maxTime);
 		}
-		tajm.printTimeResults();
 	}
 	
 	//public void run(int maxTime, int repetition, int maxRepetitions) {run(maxTime, 0.0, repetition, maxRepetitions);}
