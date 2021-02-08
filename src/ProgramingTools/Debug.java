@@ -82,11 +82,16 @@ public class Debug
 	public void progress(int i, int iMin, int iMax) {
 		
 		int N = times.size();
+		long sumOfPrevious;
 		
 		if(N == 0)
 			times.add(System.currentTimeMillis() - startLoopTime);
-		else
-			times.add(System.currentTimeMillis() - startLoopTime - times.get(N-1));
+		else {
+			sumOfPrevious = 0;
+			for(int j=0; j<N; j++)
+				sumOfPrevious += times.get(j);
+			times.add(System.currentTimeMillis() - startLoopTime - sumOfPrevious);
+		}
 		
 		Collections.sort(times);
 		
@@ -98,17 +103,17 @@ public class Debug
 		System.out.println("This iteration took: " + convertTime(times.get(N)));
 		
 		System.out.println("  - minimum: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getMinimum(times))));
+				convertTime(getMinimum(times)));
 		System.out.println("  - Q1: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getFirstQuartile(times))));
+				convertTime(getFirstQuartile(times)));
 		System.out.println("  - median: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getMedian(times))));
+				convertTime(getMedian(times)));
 		/*System.out.println("  - mean: \t" + 
 				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))));*/
 		System.out.println("  - Q3: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getThirdQuartile(times))));
+				convertTime(getThirdQuartile(times)));
 		System.out.println("  - maximum: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getMaximum(times))));
+				convertTime(getMaximum(times)));
 		System.out.println("Current time:   " + convertTime(System.currentTimeMillis()-startTime) + "\n");
 	}
 	
