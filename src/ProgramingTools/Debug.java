@@ -48,10 +48,18 @@ public class Debug
 	
 	// Shows progress of two loops
 	public void progress(int i, int iMin, int iMax, int j, int jMin, int jMax) {
-		times.add(System.currentTimeMillis() - startLoopTime);
-		for(int k=0; k<times.size()-1; k++) {
-			times.set(times.size()-1, times.get(times.size()-1) - times.get(k));
+		int N = times.size();
+		long sumOfPrevious;
+		
+		if(N == 0)
+			times.add(System.currentTimeMillis() - startLoopTime);
+		else {
+			sumOfPrevious = 0;
+			for(int k=0; k<N; k++)
+				sumOfPrevious += times.get(k);
+			times.add(System.currentTimeMillis() - startLoopTime - sumOfPrevious);
 		}
+		
 		Collections.sort(times);
 		
 		progress = (double)((i-iMin)*(jMax-jMin)+(j-jMin+1))/((iMax-iMin)*(jMax-jMin));
@@ -59,28 +67,29 @@ public class Debug
 		System.out.println("Progress: " + c(progress*100, 2) + "%, main loop " + i + "\\" + (iMax-1) + 
 				", secondary loop " + (j+1) + "\\" + jMax + ", together " + ((i-iMin)*(jMax-jMin)+(j-jMin+1)) + 
 				"\\" + ((iMax-iMin)*(jMax-jMin)) + ".");
-		/*System.out.println("Time left: " + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))) + "\n");*/
 		
-		System.out.println("Time left: ");
+		System.out.println("Estimated time left: " + 
+				convertTime((long)((1-progress) * (iMax-iMin) * (jMax - jMin) * getAverage(times))));
+		System.out.println("This iteration took: " + convertTime(times.get(N)));
+		
 		System.out.println("  - minimum: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * (jMax-jMin) * getMinimum(times))));
+				convertTime(getMinimum(times)));
 		System.out.println("  - Q1: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * (jMax-jMin) * getFirstQuartile(times))));
+				convertTime(getFirstQuartile(times)));
 		System.out.println("  - median: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * (jMax-jMin) * getMedian(times))));
+				convertTime(getMedian(times)));
 		/*System.out.println("  - mean: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * (jMax-jMin) * getAverage(times))));*/
+				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))));*/
 		System.out.println("  - Q3: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * (jMax-jMin) * getThirdQuartile(times))));
+				convertTime(getThirdQuartile(times)));
 		System.out.println("  - maximum: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * (jMax-jMin) * getMaximum(times))));
+				convertTime(getMaximum(times)));
+		
 		System.out.println("Current time:   " + convertTime(System.currentTimeMillis()-startTime) + "\n");
 	}
 	
 	// Shows progress of one loop
 	public void progress(int i, int iMin, int iMax) {
-		
 		int N = times.size();
 		long sumOfPrevious;
 		
@@ -114,6 +123,7 @@ public class Debug
 				convertTime(getThirdQuartile(times)));
 		System.out.println("  - maximum: \t" + 
 				convertTime(getMaximum(times)));
+		
 		System.out.println("Current time:   " + convertTime(System.currentTimeMillis()-startTime) + "\n");
 	}
 	

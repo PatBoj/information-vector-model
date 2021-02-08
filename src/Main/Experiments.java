@@ -83,10 +83,12 @@ public class Experiments
 		
 		for(int j=0; j<th.length; j++) {
 			for(int i=0; i<avg; i++) {
+				d.startLoopTimer();
 				net = new ScaleFreeNetwork(N, k/2);
 				dyn.setNewNetwork(net);
 				dyn.setInitialConditions(net, th[j]);
 				dyn.run(n, pEdit, i+1, avg, "non");
+				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
@@ -98,10 +100,12 @@ public class Experiments
 		
 		for(int j=0; j<th.length; j++) {
 			for(int i=0; i<avg; i++) {
+				d.startLoopTimer();
 				net2 = new ScaleFreeNetwork(N, k/2);
 				dyn2.setNewNetwork(net2);
 				dyn2.setInitialConditions(net2, th[j]);
 				dyn2.run(n, 0.05, i+1, avg, "all");
+				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
