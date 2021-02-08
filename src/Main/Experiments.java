@@ -24,7 +24,7 @@ public class Experiments
 		int dimOpinion = 100;
 		double pEdit = 0.05;
 		double pNewMessage = 0.1;
-		int avg = 2;
+		int avg = 10;
 		
 		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
