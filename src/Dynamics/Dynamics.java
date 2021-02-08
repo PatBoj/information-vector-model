@@ -411,13 +411,37 @@ public class Dynamics
 	
 	//public void run(int repetition, int maxRepetitions) {run(5000, 0.0, repetition, maxRepetitions);}
 	
+	public void saveHeader() {
+		// Commented lines are not necessary right now
+		//int nEdit = 30;
+		
+		s.writeDatatb("repetition");
+		s.writeDatatb("id");
+		s.writeDatatb("time");
+		s.writeDatatb("type");
+		//s.writeDatatb("threshold");
+		s.writeDataln("threshold");
+		//for(int i=0; i<D; i++)
+		//	s.writeDatatb("inf" + (i+1));
+		//for(int i=0; i<nEdit; i++)
+		//	s.writeDatatb("edit" + (i+1));
+		//s.writeDataln("edit" + nEdit);
+	}
+	public void closeSaveFile() {s.closeWriter();}
+	public void setProbabilities(double pChg, double pAdd, double pDel) {
+		pChangeOneBit = pChg;
+		pAddOneBit = pAdd;
+		pDeleteOneBit = pDel;
+	}
+	
 	private void save(Save s, int repetition, String type) {
 		s.writeDatatb(repetition);
 		s.writeDatatb(getLastMessage().getId().get(0));
 		s.writeDatatb(getLastMessage().getTime());
 		s.writeDatatb(type);
-		s.writeDatatb(getThreshold());
-		
+		//s.writeDatatb(getThreshold());
+		s.writeDataln(getThreshold());
+		/*
 		ArrayList<Integer> indexes = new ArrayList<Integer>();
 		for(int index : getLastMessage().getMessageIndexes())
 			indexes.add(index);
@@ -460,7 +484,7 @@ public class Dynamics
 		
 		for(int j=0; j<getLastMessage().getEdit().size(); j++) {
 			s.writeData(getLastMessage().getEdit().get(j) + (String)(j == (getLastMessage().getEdit().size()-1) ? "\n" : "\t"));
-		}
+		}*/
 	}
 	
 	// ~ SET ~	
@@ -491,26 +515,6 @@ public class Dynamics
 	
 	public void setProbabilityNewMessage(double pNewMessage) {this.pNewMessage = pNewMessage;}
 	public void setSaveFile(String path) {s = new Save(path);}
-	public void saveHeader() {
-		int nEdit = 30;
-		
-		s.writeDatatb("repetition");
-		s.writeDatatb("id");
-		s.writeDatatb("time");
-		s.writeDatatb("type");
-		s.writeDatatb("threshold");
-		for(int i=0; i<D; i++)
-			s.writeDatatb("inf" + (i+1));
-		for(int i=0; i<nEdit; i++)
-			s.writeDatatb("edit" + (i+1));
-		s.writeDataln("edit" + nEdit);
-	}
-	public void closeSaveFile() {s.closeWriter();}
-	public void setProbabilities(double pChg, double pAdd, double pDel) {
-		pChangeOneBit = pChg;
-		pAddOneBit = pAdd;
-		pDeleteOneBit = pDel;
-	}
 	
 	// ~ GETTERS ~
 	
