@@ -225,8 +225,8 @@ public class Dynamics
 			
 			if(de < 0)
 				getNode(i).setNodeOpinion(newOpinions.clone());
-			else if(Math.exp(- beta * de) > rnd.nextDouble())
-				getNode(i).setNodeOpinion(newOpinions.clone());
+			//else if(Math.exp(- beta * de) > rnd.nextDouble())
+			//	getNode(i).setNodeOpinion(newOpinions.clone());
 			s.writeDataln(calculateWholeEnergy());
 			tajm.pauseTimer(0);
 		}
