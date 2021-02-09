@@ -17,6 +17,31 @@ public class Experiments
 		d = new Debug();
 	}
 	
+	public void isingTest() {
+		int N = 1000;
+		int k = 6;
+		int n = 1000;
+		int dimOpinion = 100;
+		double pEdit = 0.05;
+		double pNewMessage = 0.1;
+		int avg = 10;
+		
+		RandomGraph net = new RandomGraph(N, (double)k/(N-1));
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		/*dyn.setSaveFile("test/raw_data.txt");
+		dyn.saveHeader();
+		
+		d.startLoopTimer();
+		for(int i=0; i<avg; i++) {
+			net = new ScaleFreeNetwork(N, k/2);
+			dyn.setNewNetwork(net);
+			dyn.setInitialConditions(net, 0.2);
+			dyn.run(n, pEdit, i+1, avg, "elo");
+			d.progress(i, 0, avg);
+		}
+		dyn.closeSaveFile();*/
+	}
+	
 	public void speedTest() {
 		int N = 10000;
 		int k = 6;

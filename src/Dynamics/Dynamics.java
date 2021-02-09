@@ -82,10 +82,10 @@ public class Dynamics
 		pAddOneBit = (double)1/3;
 		pChangeOneBit = (double)1/3;
 		
-		setInitialConditions();
+		setInitialConditions("ising");
 		
 		debug = new Debug(0);
-		tajm = new Time(new String[] {"Just saving"});
+		tajm = new Time(new String[] {"Metropolis"});
 	}
 
 	// Constructor #2
@@ -179,7 +179,7 @@ public class Dynamics
 	// Sets random opinions and given cosine threshold to all nodes to given network
 	public void setInitialConditions(Network net, double threshold) {
 		setInitialOpinions(net);
-			
+		
 		//Sets random cosine threshold to all nodes
 		for(int j=0; j<N; j++) 
 			net.getNode(j).setThreshold(threshold);
@@ -197,6 +197,79 @@ public class Dynamics
 	// Sets random opinions and cosine threshold to all nodes to network in this class
 	private void setInitialConditions() {setInitialConditions(network);}
 	public void setInitialConditions(double threshold) {setInitialConditions(network, threshold);}
+	
+	public void setInitialConditions(String type) {
+		if(type != "ising")
+			throw new Error("Wrong initial condition");
+		
+		setInitialConditions();
+		
+		tajm = new Time(new String[] {"Metropolis"});
+		Save s = new Save("metropolis.txt");
+		
+		double beta = 0;
+		int i = -1;
+		int chi = -1;
+		int[] newOpinions = new int[D];
+		for(int j=0; j<D; j++)
+			newOpinions[j] = -2;
+		double de = 0;
+		
+		for(int j=0; j<1000000; j++) {
+			tajm.startTimer();
+			i = rnd.nextInt(N);
+			chi = rnd.nextInt(D);
+			newOpinions = getNodeOpinion(i).clone();
+			newOpinions[chi] = (newOpinions[chi] + 1 + rnd.nextInt(2)+1) % 3 - 1;
+			de = calculateEnergyChange(i, newOpinions, chi);
+			
+			if(de < 0)
+				getNode(i).setNodeOpinion(newOpinions.clone());
+			else if(Math.exp(- beta * de) > rnd.nextDouble())
+				getNode(i).setNodeOpinion(newOpinions.clone());
+			s.writeDataln(calculateWholeEnergy());
+			tajm.pauseTimer(0);
+		}
+		
+		tajm.printTimeResults();
+		s.closeWriter();
+	}
+	
+	public double calculateWholeEnergy() {
+		double e = 0;
+		int connectionIndex = -1;
+		int neighborIndex = -1;
+		
+		for(int i=0; i<N; i++)
+			for(int j=0; j<getNodeDegree(i); j++) {
+				connectionIndex = getNode(i).getConnection(j)[0] != i ? 0 : 1;
+				neighborIndex = getNode(i).getConnection(j)[connectionIndex];
+				for(int k=0; k<D; k++)
+					e -= getNode(i).getNodeOpinion()[k] == getNode(neighborIndex).getNodeOpinion()[k] ? 1 : 0;
+			}
+		
+		return e;
+	}
+	
+	public double calculateEnergyChange(int i, int[] newOpinions, int chi) {
+		if(getNode(i).getNodeOpinion().length != newOpinions.length)
+			throw new Error("New opinions table must be the same size as the one in the node");
+		if(chi < 0 | chi >= D)
+			throw new Error("Change index out of bound");
+		
+		double de = 0;
+		int connectionIndex = -1;
+		int neighborIndex = -1;
+		
+		for(int j=0; j<getNodeDegree(i); j++) {
+			connectionIndex = getNode(i).getConnection(j)[0] != i ? 0 : 1;
+			neighborIndex = getNode(i).getConnection(j)[connectionIndex];
+			de += getNode(i).getNodeOpinion()[chi] == getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
+			de -= newOpinions[chi] == getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
+		}
+		
+		return de;
+	}
 	
 	// Sends message in to the network
 	public void sendRandomMessage(int sourceNode, int time) {
