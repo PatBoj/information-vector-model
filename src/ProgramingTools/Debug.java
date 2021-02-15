@@ -13,6 +13,7 @@ public class Debug
 	private double progress;
 	private long startLoopTime;
 	private ArrayList<Long> times;
+	private ArrayList<Long> sortedTimes;
 	
 	// ~ CONSTRUCTORS ~
 	// Constructor #1
@@ -22,6 +23,7 @@ public class Debug
 		progress = 0;
 		startLoopTime = 0;
 		times = new ArrayList<Long>();
+		sortedTimes = new ArrayList<Long>();
 	}
 	
 	// Default constructor
@@ -47,20 +49,10 @@ public class Debug
 	public void startLoopTimer() {startLoopTime = System.currentTimeMillis();}
 	
 	// Shows progress of two loops
-	public void progress(int i, int iMin, int iMax, int j, int jMin, int jMax) {
-		int N = times.size();
-		long sumOfPrevious;
-		
-		if(N == 0)
-			times.add(System.currentTimeMillis() - startLoopTime);
-		else {
-			sumOfPrevious = 0;
-			for(int k=0; k<N; k++)
-				sumOfPrevious += times.get(k);
-			times.add(System.currentTimeMillis() - startLoopTime - sumOfPrevious);
-		}
-		
-		Collections.sort(times);
+	public void progress(int i, int iMin, int iMax, int j, int jMin, int jMax) {		
+		times.add(System.currentTimeMillis() - startLoopTime);
+		sortedTimes.add(times.get(times.size()-1));
+		Collections.sort(sortedTimes);
 		
 		progress = (double)((i-iMin)*(jMax-jMin)+(j-jMin+1))/((iMax-iMin)*(jMax-jMin));
 		
@@ -70,59 +62,49 @@ public class Debug
 		
 		System.out.println("Estimated time left: " + 
 				convertTime((long)((1-progress) * (iMax-iMin) * (jMax - jMin) * getAverage(times))));
-		System.out.println("This iteration took: " + convertTime(times.get(N)));
+		System.out.println("This iteration took: " + convertTime(times.get(times.size()-1)));
 		
 		System.out.println("  - minimum: \t" + 
-				convertTime(getMinimum(times)));
+				convertTime(getMinimum(sortedTimes)));
 		System.out.println("  - Q1: \t" + 
-				convertTime(getFirstQuartile(times)));
+				convertTime(getFirstQuartile(sortedTimes)));
 		System.out.println("  - median: \t" + 
-				convertTime(getMedian(times)));
+				convertTime(getMedian(sortedTimes)));
 		/*System.out.println("  - mean: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))));*/
+				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(sortedTimes))));*/
 		System.out.println("  - Q3: \t" + 
-				convertTime(getThirdQuartile(times)));
+				convertTime(getThirdQuartile(sortedTimes)));
 		System.out.println("  - maximum: \t" + 
-				convertTime(getMaximum(times)));
+				convertTime(getMaximum(sortedTimes)));
 		
 		System.out.println("Current time:   " + convertTime(System.currentTimeMillis()-startTime) + "\n");
 	}
 	
 	// Shows progress of one loop
 	public void progress(int i, int iMin, int iMax) {
-		int N = times.size();
-		long sumOfPrevious;
-		
-		if(N == 0)
-			times.add(System.currentTimeMillis() - startLoopTime);
-		else {
-			sumOfPrevious = 0;
-			for(int j=0; j<N; j++)
-				sumOfPrevious += times.get(j);
-			times.add(System.currentTimeMillis() - startLoopTime - sumOfPrevious);
-		}
-		
-		Collections.sort(times);
+		times.add(System.currentTimeMillis() - startLoopTime);
+		sortedTimes.add(times.get(times.size()-1));
+		Collections.sort(sortedTimes);
 		
 		progress = (double)(i-iMin+1)/(iMax-iMin);
 		
 		System.out.println("Progress: " + c(progress*100, 2) + "%, loops " + (i+1) + "\\" + iMax + ".");
 		System.out.println("Estimated time left: " + 
 				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))));
-		System.out.println("This iteration took: " + convertTime(times.get(N)));
+		System.out.println("This iteration took: " + convertTime(times.get(times.size()-1)));
 		
 		System.out.println("  - minimum: \t" + 
-				convertTime(getMinimum(times)));
+				convertTime(getMinimum(sortedTimes)));
 		System.out.println("  - Q1: \t" + 
-				convertTime(getFirstQuartile(times)));
+				convertTime(getFirstQuartile(sortedTimes)));
 		System.out.println("  - median: \t" + 
-				convertTime(getMedian(times)));
+				convertTime(getMedian(sortedTimes)));
 		/*System.out.println("  - mean: \t" + 
-				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(times))));*/
+				convertTime((long)((1-progress) * (iMax-iMin) * getAverage(sortedTimes))));*/
 		System.out.println("  - Q3: \t" + 
-				convertTime(getThirdQuartile(times)));
+				convertTime(getThirdQuartile(sortedTimes)));
 		System.out.println("  - maximum: \t" + 
-				convertTime(getMaximum(times)));
+				convertTime(getMaximum(sortedTimes)));
 		
 		System.out.println("Current time:   " + convertTime(System.currentTimeMillis()-startTime) + "\n");
 	}

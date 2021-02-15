@@ -82,7 +82,7 @@ public class Dynamics
 		pAddOneBit = (double)1/3;
 		pChangeOneBit = (double)1/3;
 		
-		setInitialConditions("ising");
+		setInitialConditions();
 		
 		debug = new Debug(0);
 		tajm = new Time(new String[] {"Metropolis"});

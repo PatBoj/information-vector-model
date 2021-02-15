@@ -2,6 +2,8 @@ library(ggplot2)
 library(tikzDevice)
 library(dplyr)
 library(scales)
+library(shiny)
+library(ggpubr)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
@@ -23,12 +25,18 @@ agregadeData <- function(data) {
   return(agregaded)
 }
 
-#ER <- readRawData("ER")
-#agregadedER <- agregadeData(ER)
+ER <- readRawData("ER")
+agregadedER <- agregadeData(ER)
 #agregaded <- agregaded[as.numeric(agregaded$id) > 1000,]
+agregadedER$net <- as.factor(rep("ER", nrow(agregadedER)))
 
 BA <- readRawData("BA")
 agregadedBA <- agregadeData(BA)
+agregadedBA$net <- as.factor(rep("BA", nrow(agregadedBA)))
+
+SQ <- readRawData("SQ")
+agregadedSQ <- agregadeData(SQ)
+agregadedSQ$net <- as.factor(rep("SQ", nrow(agregadedSQ)))
 
 messagesHistogram <- function(th, agregaded) {
   breaks <- 220
@@ -64,8 +72,8 @@ messagesHistogram <- function(th, agregaded) {
     ) +
     scale_color_manual(values=c("#4A3678", "#FF62AA"), 
                         breaks=c("all", "non"),
-                        labels=c("?? = 0,05 (mo¿liwoœæ edycji)", "?? = 0 (brak mo¿liwoœci edycji)")) +
-    xlab("liczba udostêpnieñ jednej informacji") +
+                        labels=c("alfa = 0,05 (mo¿liwoœæ edycji)", "alfa = 0 (brak mo¿liwoœci edycji)")) +
+    xlab(paste("liczba udostêpnieñ jednej informacji th = ", th, sep="")) +
     ylab("gêstoœæ prawdopodobieñstwa") +
     scale_x_continuous(labels = math_format(10^.x),
                        limits = c(0, 3),
@@ -75,13 +83,19 @@ messagesHistogram <- function(th, agregaded) {
                        limits = c(.3*10^-8, 10^0),
                        breaks = 10^(-9:0)) +
     annotation_logticks(sides="lb")
-  print(plot)
+  return(plot)
 }
 
-th <- 0.25
-#png(file=paste("lifespan_histogram_types_", th, "_pl.png", sep=""), width=750, height=500)
-messagesHistogram(th, agregadedBA)
-#dev.off()
+counter = 1
+for(th in c(-0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75)) {
+  png(file=paste(counter, "_message_histv2_", th, "_pl.png", sep=""), width=750, height=1500)
+  print(ggarrange(messagesHistogram(th, agregadedBA), 
+                  messagesHistogram(th, agregadedER), 
+                  messagesHistogram(th, agregadedSQ),
+                  nrow=3, ncol=1))
+  dev.off()
+  counter = counter + 1
+}
 
 timeHistogram <- function(th) {
   breaks <- 200
@@ -117,7 +131,7 @@ timeHistogram <- function(th) {
     ) +
     scale_color_manual(values=c("#4A3678", "#FF62AA"), 
                        breaks=c("all", "non"),
-                       labels=c("?? = 0,05 (mo¿liwoœæ edycji)", "?? = 0 (brak mo¿liwoœci edycji)")) +
+                       labels=c("alfa = 0,05 (mo¿liwoœæ edycji)", "alfa = 0 (brak mo¿liwoœci edycji)")) +
     xlab("czas ¿ycia informacji") +
     ylab("gêstoœæ prawdopodobieñstwa") +
     scale_x_continuous(limits = c(0, 250000)) + 
@@ -131,3 +145,14 @@ timeHistogram <- function(th) {
 #png(file=paste("lifespan_histogram_types_", th, "_pl.png", sep=""), width=750, height=500)
 #timeHistogram(th)
 #dev.off()
+
+ui <- fluidPage(
+  checkboxInput("BA", "ER", FALSE),
+  verbatimTextOutput("value")
+)
+
+server <- function(input, output) {
+  output$value <- renderText({ input$somevalue })
+}
+
+shinyApp(ui, server)

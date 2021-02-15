@@ -93,7 +93,7 @@ public class Experiments
 	public void popularity() {
 		int N = 1000;
 		int k = 6;
-		int n = 300000;
+		int n = 300;
 		int dimOpinion = 100;
 		double pEdit = .0;
 		double pNewMessage = .1;
