@@ -56,8 +56,6 @@ public class Dynamics
 	// Saving data to file
 	private Save s;
 	
-	private Time tajm;
-	
 	// ~ CONSTRUCTORS ~
 	// Constructor #1
 	public Dynamics(Network network, int lenghtOfOpinionVector, double pNewMessage)
@@ -85,14 +83,13 @@ public class Dynamics
 		setInitialConditions();
 		
 		debug = new Debug(0);
-		tajm = new Time(new String[] {"Metropolis"});
 	}
 
 	// Constructor #2
 	public Dynamics(Network network, double pNewMessage) {this(network, 100, pNewMessage);}
 	
 	// Constructor #3
-	public Dynamics(Network network) {this(network, 12, 0.005);}
+	public Dynamics(Network network) {this(network, 0.005);}
 	
 	// Default constructor
 	public Dynamics() {this(new Network());};
@@ -100,7 +97,7 @@ public class Dynamics
 	// ~ METHODS ~
 	
 	// Cosine similarity
-	// the message[0] is the message nad
+	// the message[0] is the message content
 	// message[1] is for indexes in opinion vector
 	private double cosineSimilarity(int[] opinion, int[][] message) {
 		
@@ -157,7 +154,7 @@ public class Dynamics
 	private Message getLastMessage() {return messages.get(messages.size()-1);}
 	
 	// Sets initial opinions for every agent
-	private void setInitialOpinions(Network net) {
+	private void setRandomInitialOpinions(Network net) {
 		int[] tempOpinion = new int[D];
 		int tempSumOpinion;
 		int i = 0;
@@ -176,9 +173,22 @@ public class Dynamics
 		}
 	}
 	
+	public void setInitialConditions(Network net, double threshold, String type) {
+		if(type.equals("random"))
+			setRandomInitialOpinions(net);
+		else if(type.equals("ising"))
+			setIsingInitialOpinions(net);
+		else
+			throw new Error("Wrong initial condition.");
+		
+		//Sets random cosine threshold to all nodes
+		for(int j=0; j<N; j++) 
+			net.getNode(j).setThreshold(threshold);
+	}
+	
 	// Sets random opinions and given cosine threshold to all nodes to given network
 	public void setInitialConditions(Network net, double threshold) {
-		setInitialOpinions(net);
+		setRandomInitialOpinions(net);
 		
 		//Sets random cosine threshold to all nodes
 		for(int j=0; j<N; j++) 
@@ -187,7 +197,7 @@ public class Dynamics
 	
 	// Sets random opinions and random cosine threshold to all nodes to given network
 	public void setInitialConditions(Network net) {
-		setInitialOpinions(net);
+		setRandomInitialOpinions(net);
 		
 		//Sets random cosine threshold to all nodes
 		for(int j=0; j<N; j++) 
@@ -195,77 +205,64 @@ public class Dynamics
 	}
 	
 	// Sets random opinions and cosine threshold to all nodes to network in this class
-	private void setInitialConditions() {setInitialConditions(network);}
+	public void setInitialConditions() {setInitialConditions(network);}
 	public void setInitialConditions(double threshold) {setInitialConditions(network, threshold);}
+	public void setInitialConditions(double threshold, String type) {setInitialConditions(network, threshold, type);}
 	
-	public void setInitialConditions(String type) {
-		if(type != "ising")
-			throw new Error("Wrong initial condition");
+	public void setIsingInitialOpinions(Network net) {
+		setRandomInitialOpinions(net);
 		
-		setInitialConditions();
+		double beta = 0; // exponent
+		int i = -1; // random node
+		int chi = -1; // random index of opinion vector
+		int newOpinion = -2; // new opinions in given index
+		int e = calculateWholeEnergy(net); // whole energy
+		int de = 0; // energy change
 		
-		tajm = new Time(new String[] {"Metropolis"});
-		Save s = new Save("metropolis.txt");
-		
-		double beta = 0;
-		int i = -1;
-		int chi = -1;
-		int[] newOpinions = new int[D];
-		for(int j=0; j<D; j++)
-			newOpinions[j] = -2;
-		double de = 0;
-		
-		for(int j=0; j<1000000; j++) {
-			tajm.startTimer();
+		for(int j=0; j<10000; j++) {
 			i = rnd.nextInt(N);
 			chi = rnd.nextInt(D);
-			newOpinions = getNodeOpinion(i).clone();
-			newOpinions[chi] = (newOpinions[chi] + 1 + rnd.nextInt(2)+1) % 3 - 1;
-			de = calculateEnergyChange(i, newOpinions, chi);
+			newOpinion = (net.getNode(i).getNodeOpinion()[chi] + 1 + rnd.nextInt(2)+1) % 3 - 1;
+			de = calculateEnergyChange(net, i, newOpinion, chi);
 			
-			if(de < 0)
-				getNode(i).setNodeOpinion(newOpinions.clone());
+			if(de < 0) {
+				net.getNode(i).setOneNodeOpinion(i, newOpinion);
+				e += de;
+			}
 			//else if(Math.exp(- beta * de) > rnd.nextDouble())
 			//	getNode(i).setNodeOpinion(newOpinions.clone());
-			s.writeDataln(calculateWholeEnergy());
-			tajm.pauseTimer(0);
 		}
-		
-		tajm.printTimeResults();
-		s.closeWriter();
 	}
 	
-	public double calculateWholeEnergy() {
-		double e = 0;
+	public int calculateWholeEnergy(Network net) {
+		int e = 0;
 		int connectionIndex = -1;
 		int neighborIndex = -1;
 		
 		for(int i=0; i<N; i++)
-			for(int j=0; j<getNodeDegree(i); j++) {
-				connectionIndex = getNode(i).getConnection(j)[0] != i ? 0 : 1;
-				neighborIndex = getNode(i).getConnection(j)[connectionIndex];
+			for(int j=0; j<net.getNodeDegree(i); j++) {
+				connectionIndex = net.getNode(i).getConnection(j)[0] != i ? 0 : 1;
+				neighborIndex = net.getNode(i).getConnection(j)[connectionIndex];
 				for(int k=0; k<D; k++)
-					e -= getNode(i).getNodeOpinion()[k] == getNode(neighborIndex).getNodeOpinion()[k] ? 1 : 0;
+					e -= net.getNode(i).getNodeOpinion()[k] == net.getNode(neighborIndex).getNodeOpinion()[k] ? 1 : 0;
 			}
 		
 		return e;
 	}
 	
-	public double calculateEnergyChange(int i, int[] newOpinions, int chi) {
-		if(getNode(i).getNodeOpinion().length != newOpinions.length)
-			throw new Error("New opinions table must be the same size as the one in the node");
+	public int calculateEnergyChange(Network net, int i, int newValue, int chi) {
 		if(chi < 0 | chi >= D)
 			throw new Error("Change index out of bound");
 		
-		double de = 0;
+		int de = 0;
 		int connectionIndex = -1;
 		int neighborIndex = -1;
 		
-		for(int j=0; j<getNodeDegree(i); j++) {
-			connectionIndex = getNode(i).getConnection(j)[0] != i ? 0 : 1;
-			neighborIndex = getNode(i).getConnection(j)[connectionIndex];
-			de += getNode(i).getNodeOpinion()[chi] == getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
-			de -= newOpinions[chi] == getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
+		for(int j=0; j<net.getNodeDegree(i); j++) {
+			connectionIndex = net.getNode(i).getConnection(j)[0] != i ? 0 : 1;
+			neighborIndex = net.getNode(i).getConnection(j)[connectionIndex];
+			de += net.getNode(i).getNodeOpinion()[chi] == net.getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
+			de -= newValue == net.getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
 		}
 		
 		return de;
@@ -501,6 +498,7 @@ public class Dynamics
 		//	s.writeDatatb("edit" + (i+1));
 		//s.writeDataln("edit" + nEdit);
 	}
+	
 	public void closeSaveFile() {s.closeWriter();}
 	public void setProbabilities(double pChg, double pAdd, double pDel) {
 		pChangeOneBit = pChg;
