@@ -8,7 +8,7 @@ import ProgramingTools.Debug;
 
 public class Main {
 	public static void main(String args[]) throws InterruptedException {
-		Experiments ex = new Experiments();
-		ex.isingTest();
+		Test t = new Test();
+		t.isingTest();
 	}
 }
