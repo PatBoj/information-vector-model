@@ -144,7 +144,7 @@ public class Node
 	// ~ SET ~
 	public void setNodeOpinion(int[] nodeOpinion) {this.nodeOpinion = nodeOpinion.clone();}
 	public void setOneNodeOpinion(int index, int value) {
-		if(value != -1 | value != 0 | value != 1)
+		if(value != -1 & value != 0 & value != 1)
 			throw new Error("Opinion element must be -1, 0 or 1.");
 		nodeOpinion[index] = value;
 	}

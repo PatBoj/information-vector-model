@@ -55,16 +55,17 @@ public class Experiments
 	}
 	
 	public void isingTest() {
-		int N = 1000;
-		int k = 6;
+		int N = 10000;
+		int E = 200;
 		int n = 1000;
 		int dimOpinion = 100;
 		double pEdit = 0.05;
 		double pNewMessage = 0.1;
 		int avg = 10;
 		
-		RandomGraph net = new RandomGraph(N, (double)k/(N-1));
+		RandomGraph net = new RandomGraph(N, E);
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
+		dyn.setInitialConditions(0.2, "ising");
 		/*dyn.setSaveFile("test/raw_data.txt");
 		dyn.saveHeader();
 		

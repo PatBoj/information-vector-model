@@ -216,12 +216,15 @@ public class Dynamics
 	public void setIsingInitialOpinions(Network net) {
 		setRandomInitialOpinions(net);
 		
-		double beta = 0; // exponent
+		double beta = 100000; // exponent
 		int i = -1; // random node
 		int chi = -1; // random index of opinion vector
 		int newOpinion = -2; // new opinions in given index
 		int e = calculateWholeEnergy(net); // whole energy
 		int de = 0; // energy change
+		
+		Save s = new Save("ising.txt");
+		s.writeDataln(e);
 		
 		for(int j=0; j<10000; j++) {
 			i = rnd.nextInt(N);
@@ -230,12 +233,18 @@ public class Dynamics
 			de = calculateEnergyChange(net, i, newOpinion, chi);
 			
 			if(de < 0) {
-				net.getNode(i).setOneNodeOpinion(i, newOpinion);
+				net.getNode(i).setOneNodeOpinion(chi, newOpinion);
 				e += de;
 			}
-			//else if(Math.exp(- beta * de) > rnd.nextDouble())
-			//	getNode(i).setNodeOpinion(newOpinions.clone());
+			else if(Math.exp(- beta * de) > rnd.nextDouble()) {
+				net.getNode(i).setOneNodeOpinion(chi, newOpinion);
+				e += de;
+			}
+			
+			s.writeDataln(e);
 		}
+		
+		s.closeWriter();
 	}
 	
 	public int calculateWholeEnergy(Network net) {
@@ -248,10 +257,10 @@ public class Dynamics
 				connectionIndex = net.getNode(i).getConnection(j)[0] != i ? 0 : 1;
 				neighborIndex = net.getNode(i).getConnection(j)[connectionIndex];
 				for(int k=0; k<D; k++)
-					e -= net.getNode(i).getNodeOpinion()[k] == net.getNode(neighborIndex).getNodeOpinion()[k] ? 1 : 0;
+					e -= net.getNode(i).getNodeOpinion()[k] * net.getNode(neighborIndex).getNodeOpinion()[k];
 			}
 		
-		return e;
+		return e/2;
 	}
 	
 	public int calculateEnergyChange(Network net, int i, int newValue, int chi) {
@@ -265,8 +274,8 @@ public class Dynamics
 		for(int j=0; j<net.getNodeDegree(i); j++) {
 			connectionIndex = net.getNode(i).getConnection(j)[0] != i ? 0 : 1;
 			neighborIndex = net.getNode(i).getConnection(j)[connectionIndex];
-			de += net.getNode(i).getNodeOpinion()[chi] == net.getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
-			de -= newValue == net.getNode(neighborIndex).getNodeOpinion()[chi] ? 1 : 0;
+			de += net.getNode(i).getNodeOpinion()[chi] * net.getNode(neighborIndex).getNodeOpinion()[chi];
+			de -= newValue * net.getNode(neighborIndex).getNodeOpinion()[chi];
 		}
 		
 		return de;
