@@ -13,8 +13,45 @@ public class Experiments
 {
 	Debug d;
 	
+	int N;
+	int k;
+	int timeSteps;
+	int dimOpinion;
+	double pEdit;
+	double pNewMessage;
+	int realisations;
+	
 	public Experiments() {
 		d = new Debug();
+		
+		N = 1000;
+		k = 6;
+		timeSteps = 300000;
+		dimOpinion = 100;
+		pEdit = 0.05;
+		pNewMessage = 0.1;
+		realisations = 10;
+	}
+	
+	public void testHeaders() {
+		RandomGraph  net = new RandomGraph(N, (double)k/(N-1));
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
+		
+		timeSteps = 10000;
+		
+		for(int i=0; i<realisations; i++) {
+			dyn.setSaveFile("results/16_02_2021/test" + i + ".txt");
+			dyn.saveParameters("time", realisations, timeSteps);
+			dyn.saveHeader();
+			
+			d.startLoopTimer();
+			net = new RandomGraph(N, (double)k/(N-1));
+			dyn.setNewNetwork(net);
+			dyn.setInitialConditions(0.2);
+			dyn.run(timeSteps);
+			d.progress(i, 0, realisations);
+			dyn.closeSaveFile();
+		}
 	}
 	
 	public void isingTest() {
@@ -27,7 +64,7 @@ public class Experiments
 		int avg = 10;
 		
 		RandomGraph net = new RandomGraph(N, (double)k/(N-1));
-		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
 		/*dyn.setSaveFile("test/raw_data.txt");
 		dyn.saveHeader();
 		
@@ -52,7 +89,7 @@ public class Experiments
 		int avg = 10;
 		
 		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
-		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
 		dyn.setSaveFile("test/raw_data.txt");
 		dyn.saveHeader();
 		
@@ -61,7 +98,7 @@ public class Experiments
 			net = new ScaleFreeNetwork(N, k/2);
 			dyn.setNewNetwork(net);
 			dyn.setInitialConditions(net, 0.2);
-			dyn.run(n, pEdit, i+1, avg, "elo");
+			dyn.run(n);
 			d.progress(i, 0, avg);
 		}
 		dyn.closeSaveFile();
@@ -77,7 +114,7 @@ public class Experiments
 		int avg = 2;
 		
 		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
-		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
 		dyn.setSaveFile("test/raw_data.txt");
 		dyn.saveHeader();
 		
@@ -85,7 +122,7 @@ public class Experiments
 			net = new ScaleFreeNetwork(N, k/2);
 			dyn.setNewNetwork(net);
 			dyn.setInitialConditions(net, 0.2);
-			dyn.run(n, pEdit, i, avg, "elo");
+			dyn.run(n);
 		}
 		dyn.closeSaveFile();
 	}
@@ -102,7 +139,7 @@ public class Experiments
 		double[] th = {-0.75, -0.50, -0.25, 0, 0.25, 0.50, 0.75};
 		
 		ScaleFreeNetwork net = new ScaleFreeNetwork(N, k/2);
-		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
 		dyn.setSaveFile("results\\08_02_2021\\none_th_BA.txt");		
 		dyn.saveHeader();
 		
@@ -112,14 +149,14 @@ public class Experiments
 				net = new ScaleFreeNetwork(N, k/2);
 				dyn.setNewNetwork(net);
 				dyn.setInitialConditions(net, th[j]);
-				dyn.run(n, pEdit, i+1, avg, "non");
+				dyn.run(n);
 				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
 		
 		ScaleFreeNetwork net2 = new ScaleFreeNetwork(N, k/2);
-		Dynamics dyn2 = new Dynamics(net2, dimOpinion, pNewMessage);
+		Dynamics dyn2 = new Dynamics(net2, dimOpinion, pNewMessage, pEdit);
 		dyn2.setSaveFile("Results\\08_02_2021\\all_th_BA.txt");
 		dyn2.saveHeader();
 		
@@ -129,7 +166,7 @@ public class Experiments
 				net2 = new ScaleFreeNetwork(N, k/2);
 				dyn2.setNewNetwork(net2);
 				dyn2.setInitialConditions(net2, th[j]);
-				dyn2.run(n, 0.05, i+1, avg, "all");
+				dyn2.run(n);
 				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
@@ -150,7 +187,7 @@ public class Experiments
 		double[] th = {-0.75, -0.50, -0.25, 0, 0.25, 0.50, 0.75};
 		
 		RandomGraph net = new RandomGraph(N, k);
-		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage);
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
 		dyn.setSaveFile("results\\08_02_2021\\none_th_ER.txt");		
 		dyn.saveHeader();
 		
@@ -160,14 +197,14 @@ public class Experiments
 				net = new RandomGraph(N, k);
 				dyn.setNewNetwork(net);
 				dyn.setInitialConditions(net, th[j]);
-				dyn.run(n, pEdit, i+1, avg, "non");
+				dyn.run(n);
 				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
 		
 		RandomGraph net2 = new RandomGraph(N, k);
-		Dynamics dyn2 = new Dynamics(net2, dimOpinion, pNewMessage);
+		Dynamics dyn2 = new Dynamics(net2, dimOpinion, pNewMessage, pEdit);
 		dyn2.setSaveFile("Results\\08_02_2021\\all_th_ER.txt");
 		dyn2.saveHeader();
 		
@@ -177,7 +214,7 @@ public class Experiments
 				net2 = new RandomGraph(N, k);
 				dyn2.setNewNetwork(net2);
 				dyn2.setInitialConditions(net2, th[j]);
-				dyn2.run(n, 0.05, i+1, avg, "all");
+				dyn2.run(n);
 				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}

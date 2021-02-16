@@ -35,6 +35,9 @@ public class Dynamics
 	// Probability of sending new message by agent
 	private double pNewMessage;
 	
+	// Probability of changing message
+	private double pEdit;
+	
 	// Probability of deleting bit of information that agent disagrees
 	private double pDeleteOneBit;
 	
@@ -58,7 +61,7 @@ public class Dynamics
 	
 	// ~ CONSTRUCTORS ~
 	// Constructor #1
-	public Dynamics(Network network, int lenghtOfOpinionVector, double pNewMessage)
+	public Dynamics(Network network, int lenghtOfOpinionVector, double pNewMessage, double pEdit)
 	{
 		if(lenghtOfOpinionVector <= 0)
 			throw new Error("Length of opinion vector must be greater than zero.");
@@ -70,6 +73,7 @@ public class Dynamics
 		this.network = network;
 		N = network.getNumberOfNodes();
 		this.pNewMessage = pNewMessage;
+		this.pEdit = pEdit;
 		D = lenghtOfOpinionVector;
 		editID = 0;
 		
@@ -86,10 +90,10 @@ public class Dynamics
 	}
 
 	// Constructor #2
-	public Dynamics(Network network, double pNewMessage) {this(network, 100, pNewMessage);}
+	public Dynamics(Network network, double pNewMessage, double pEdit) {this(network, 100, pNewMessage, pEdit);}
 	
 	// Constructor #3
-	public Dynamics(Network network) {this(network, 0.005);}
+	public Dynamics(Network network) {this(network, 0.005, 0.05);}
 	
 	// Default constructor
 	public Dynamics() {this(new Network());};
@@ -402,7 +406,7 @@ public class Dynamics
 	}
 	
 	// One time step
-	private void oneStep(int time, double pEdit, int repetition, String type) {
+	private void oneStep(int time) {
 		int node = rnd.nextInt(N); // pick random node from the network
 		//ArrayList<Message> neighborMessages; // all neighbors messages
 		boolean alreadyShared; // true if message with this ID was shared by agent
@@ -413,7 +417,7 @@ public class Dynamics
 		// Sends new message to the network
 		if(rnd.nextDouble() < pNewMessage) {
 			sendRandomMessage(rnd.nextInt(N), time);
-			save(s, repetition, type);
+			save();
 		} else { // Share message
 			//neighborMessages = sortByTime(getNeighborMessages(node)); // gets all neighbor messages and sorts them by time
 			// Checks if the last neighbor message is similar to the node's opinion vector
@@ -459,7 +463,7 @@ public class Dynamics
 						setMessage(node, getLastMessage());
 						setDashboard(node, getLastMessage());
 						
-						save(s, repetition, type);
+						save();
 						break;
 					}
 				}
@@ -467,13 +471,13 @@ public class Dynamics
 		}
 	}
 	
-	public void run(int maxTime, double pEdit, int repetition, int maxRepetitions, String type) {
+	public void run(int maxTime) {
 		sendRandomMessage(rnd.nextInt(N), 0);
 		
-		save(s, repetition, type);
+		save();
 		//debug.startLoopTimer();
 		for(int i=0; i<maxTime; i++) {
-			oneStep(i+1, pEdit, repetition, type);
+			oneStep(i+1);
 			//if((i+1)%1000 == 0) debug.progressSimple(repetition-1, 0, maxRepetitions, i, 0, maxTime);
 		}
 	}
@@ -486,12 +490,12 @@ public class Dynamics
 		// Commented lines are not necessary right now
 		//int nEdit = 30;
 		
-		s.writeDatatb("repetition");
-		s.writeDatatb("id");
-		s.writeDatatb("time");
-		s.writeDatatb("type");
+		//s.writeDatatb("repetition");
+		s.writeDataln("message_id");
+		//s.writeDatatb("time");
+		//s.writeDatatb("type");
 		//s.writeDatatb("threshold");
-		s.writeDataln("threshold");
+		//s.writeDataln("threshold");
 		//for(int i=0; i<D; i++)
 		//	s.writeDatatb("inf" + (i+1));
 		//for(int i=0; i<nEdit; i++)
@@ -499,20 +503,63 @@ public class Dynamics
 		//s.writeDataln("edit" + nEdit);
 	}
 	
-	public void closeSaveFile() {s.closeWriter();}
-	public void setProbabilities(double pChg, double pAdd, double pDel) {
-		pChangeOneBit = pChg;
-		pAddOneBit = pAdd;
-		pDeleteOneBit = pDel;
+	public void saveParameters(String order, int realisations, int maxTime) {
+		s.writeDatatb("N");
+		s.writeDatatb(N);
+		s.writeDataln("Number of nodes in the newtork");
+		
+		s.writeDatatb("<k>");
+		s.writeDatatb(network.getAverageDegree());
+		s.writeDataln("Average degree");
+		
+		s.writeDatatb("network type");
+		s.writeDatatb(network.getTopologyType());
+		s.writeDataln("Topology type of the network");
+		
+		s.writeDatatb("D");
+		s.writeDatatb(D);
+		s.writeDataln("Length of the opinion vector");
+		
+		s.writeDatatb("eta");
+		s.writeDatatb(pNewMessage);
+		s.writeDataln("Probability of sending new message");
+		
+		s.writeDatatb("tau");
+		s.writeDatatb(pEdit);
+		s.writeDataln("Probability of edit an information");
+		
+		s.writeDatatb("alpha");
+		s.writeDatatb(pNewMessage);
+		s.writeDataln("Probability of creating new message");
+		
+		s.writeDatatb("order");
+		s.writeDatatb(order);
+		s.writeDataln("Order of information: by time or by similarity");
+		
+		s.writeDatatb("energy");
+		s.writeDatatb(calculateWholeEnergy(network));
+		s.writeDataln("Energy of connections in the network");
+		
+		s.writeDatatb("realizations");
+		s.writeDatatb(realisations);
+		s.writeDataln("Number of independet realisations");
+		
+		s.writeDatatb("time steps");
+		s.writeDatatb(maxTime);
+		s.writeDataln("Number of time steps");
+		
+		s.writeDataln("");
 	}
 	
-	private void save(Save s, int repetition, String type) {
-		s.writeDatatb(repetition);
-		s.writeDatatb(getLastMessage().getId().get(0));
-		s.writeDatatb(getLastMessage().getTime());
-		s.writeDatatb(type);
+	public void closeSaveFile() {s.closeWriter();}
+	
+	private void save() {
+		//s.writeDatatb(repetition);
+		s.writeDataln(getLastMessage().getId().get(0));
+		//s.writeDatatb(getLastMessage().getTime());
+		//s.writeDatatb(type);
 		//s.writeDatatb(getThreshold());
-		s.writeDataln(getThreshold());
+		//s.writeDataln(getThreshold());
 		/*
 		ArrayList<Integer> indexes = new ArrayList<Integer>();
 		for(int index : getLastMessage().getMessageIndexes())
@@ -560,6 +607,12 @@ public class Dynamics
 	}
 	
 	// ~ SET ~	
+	
+	public void setProbabilities(double pChg, double pAdd, double pDel) {
+		pChangeOneBit = pChg;
+		pAddOneBit = pAdd;
+		pDeleteOneBit = pDel;
+	}
 	
 	// Sets opinion of a single node
 	public void setNodeOpinion(int i, int[] opinion) {
