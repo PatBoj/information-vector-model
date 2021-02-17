@@ -1,33 +1,47 @@
 package Main;
 
+import Dynamics.Dynamics;
+import Networks.RandomGraph;
+import ProgramingTools.Debug;
+
 public class Experiments implements Runnable {
 	
-	private Thread t;
-	private String threadName;
+	private Debug d;
+	private int id;
 	
-	Experiments( String name) {
-		threadName = name;
-		System.out.println("Creating " +  threadName);
+	private int N;
+	private int k;
+	private int timeSteps;
+	private int dimOpinion;
+	private double pEdit;
+	private double pNewMessage;
+	private int realisations;
+	
+	Experiments(int id) {
+		d = new Debug(0);
+		this.id = id;
+		
+		N = 1000;
+		k = 6;
+		timeSteps = 300000;
+		dimOpinion = 100;
+		pEdit = 0.05;
+		pNewMessage = 0.1;
+		realisations = 10;
 	}
 
 	public void run() {
-		System.out.println("Running " +  threadName );
-		try {
-			for(int i = 4; i > 0; i--) {
-				System.out.println("Thread: " + threadName + ", " + i);
-				Thread.sleep(50);
-			}
-		} catch (InterruptedException e) {
-			System.out.println("Thread " +  threadName + " interrupted.");
-		}
-		System.out.println("Thread " +  threadName + " exiting.");
-	}
-	   
-	public void start () {
-		System.out.println("Starting " +  threadName );
-		if (t == null) {
-			t = new Thread (this, threadName);
-			t.start ();
-		}
+		RandomGraph  net = new RandomGraph(N, (double)k/(N-1));
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
+		
+		dyn.setSaveFile("results/16_02_2021/test" + id + ".txt");
+		dyn.saveParameters("time", realisations, timeSteps);
+		dyn.saveHeader();
+			
+		net = new RandomGraph(N, (double)k/(N-1));
+		dyn.setNewNetwork(net);
+		dyn.setInitialConditions(0.2);
+		dyn.run(timeSteps);
+		dyn.closeSaveFile();
 	}
 }

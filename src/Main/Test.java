@@ -40,6 +40,27 @@ public class Test
 		realisations = 10;
 	}
 	
+	public void testThreadSpeed() {
+		realisations = 24;
+		
+		RandomGraph  net = new RandomGraph(N, (double)k/(N-1));
+		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
+		
+		for(int i=0; i<realisations; i++) {
+			dyn.setSaveFile("results/16_02_2021/test" + (i+1) + ".txt");
+			dyn.saveParameters("time", realisations, timeSteps);
+			dyn.saveHeader();
+			
+			d.startLoopTimer();
+			net = new RandomGraph(N, (double)k/(N-1));
+			dyn.setNewNetwork(net);
+			dyn.setInitialConditions(0.2);
+			dyn.run(timeSteps);
+			d.progress(i, 0, realisations);
+			dyn.closeSaveFile();
+		}
+	}
+	
 	public void testHeaders() {
 		RandomGraph  net = new RandomGraph(N, (double)k/(N-1));
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
