@@ -8,13 +8,17 @@ params <- 11
 dirName <- "16_02_2021/"
 fileNames <- list.files(dirName)
 
-rawData <- lapply(fileNames, function(x) {read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = TRUE)})
-parameters <- lapply(fileNames, function(x) {read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t")})
+rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = TRUE))})
+parameters <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t"))})
+
+rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], network_type = rep(parameters[[i]][3,2], nrow(rawData[[i]])))})
+rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
+rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], alpha = rep(parameters[[i]][7,2], nrow(rawData[[i]])))})
 
 data <- lapply(rawData, function(x) {
   data.frame(
     x %>% 
-      group_by(message_id) %>%
+      group_by(message_id, network_type, tau, alpha) %>%
       summarise(counts = n())
     )
   })
@@ -22,7 +26,13 @@ data <- lapply(rawData, function(x) {
 #data <- bind_rows(data, .id = "realisation")
 data <- bind_rows(data)
 
-timeHistogram <- function() {
+histograms <- data.frame(
+  data %>%
+    group_by(network_type, tau, alpha) %>%
+    hist(data$counts)
+)
+
+popularityHistogram <- function() {
   breaks <- 220
   histogram <- hist(log10(data$counts), breaks = breaks)
   factor <- 10^histogram$breaks[-1] - 10^histogram$breaks[-length(histogram$breaks)]
@@ -46,8 +56,8 @@ timeHistogram <- function() {
       legend.box.background=element_rect(colour = "black"),
       legend.spacing.y = unit(0, "mm")
     ) + 
-    xlab("liczba udostepnien jednej informacji") +
-    ylab("gêstoœæ prawdopodobieñstwa") +
+    xlab("number of shares") +
+    ylab("probability density") +
     scale_x_continuous(labels = math_format(10^.x),
                        limits = c(0, 3),
                        breaks = seq(0,5)) + 
