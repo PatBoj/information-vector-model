@@ -12,8 +12,8 @@ rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x
 parameters <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t"))})
 
 rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], network_type = rep(parameters[[i]][3,2], nrow(rawData[[i]])))})
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], alpha = rep(parameters[[i]][7,2], nrow(rawData[[i]])))})
+rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], alpha = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
+rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][7,2], nrow(rawData[[i]])))})
 
 data <- lapply(rawData, function(x) {
   data.frame(
