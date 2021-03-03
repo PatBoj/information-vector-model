@@ -8,7 +8,14 @@ import ProgramingTools.Debug;
 public class Main {
 	public static void main(String args[]) throws InterruptedException {
 		
+<<<<<<< HEAD
+		int n = 2;
+		double[] tau = new double[11];
+		for(int i=0; i<tau.length; i++)
+			tau[i] = -1 + i * 0.2;
+=======
 		int n = 24;
+>>>>>>> parent of 243127e3 (conduct simulations)
 		
 		Debug d = new Debug();
 		
