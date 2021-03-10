@@ -13,7 +13,7 @@ public class LatticeNetwork extends Network
 		if(N != n*n) 
 			throw new RuntimeException("Number of nodes does not have integer square root.");
 		assignLinks();
-		typeOfTopology = "lattice";
+		typeOfTopology = "SQ";
 	}
 	
 	// Copy constructor
