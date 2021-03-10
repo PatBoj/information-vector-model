@@ -3,10 +3,10 @@ N	1024	Number of nodes in the newtork
 network type	lattice	Topology type of the network
 D	100	Length of the opinion vector
 eta	0.0	Probability of creating new message
-tau	1,00	Probability of edit an information
+tau	1.0	Probability of edit an information
 alpha	0.1	Probability of sending new message
 order	time	Order of information: by time or by similarity
-energy	13	Energy of connections in the network
+energy	-284	Energy of connections in the network
 realizations	20	Number of independet realisations
 time steps	1000000	Number of time steps
 
@@ -100021,47 +100021,3 @@ message_id
 100008
 100009
 100010
-100011
-100012
-100013
-100014
-100015
-100016
-100017
-100018
-100019
-100020
-100021
-100022
-100023
-100024
-100025
-100026
-100027
-100028
-100029
-100030
-100031
-100032
-100033
-100034
-100035
-100036
-100037
-100038
-100039
-100040
-100041
-100042
-100043
-100044
-100045
-100046
-100047
-100048
-100049
-100050
-100051
-100052
-100053
-100054

@@ -534,7 +534,7 @@ public class Dynamics
 		s.writeDataln("Probability of creating new message");
 		
 		s.writeDatatb("tau");
-		s.writeDatatb(debug.c(getNodeThreshold(0)));
+		s.writeDatatb(Math.round(getNodeThreshold(0)*100)/100);
 		s.writeDataln("Probability of edit an information");
 		
 		s.writeDatatb("alpha");
