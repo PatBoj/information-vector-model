@@ -53,10 +53,11 @@ public class Experiments implements Runnable {
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
 		
 		dyn.setSaveFile("results/16_02_2021/" + net.getTopologyType() + "_" + id + "_tau_" + d.c(threshold) + (pEdit == 0 ? "_non" : "_all") + ".txt");
+		
+		dyn.setInitialConditions(threshold);
 		dyn.saveParameters("time", realisations, timeSteps);
 		dyn.saveHeader();
 		
-		dyn.setInitialConditions(threshold);
 		dyn.run(timeSteps);
 		dyn.closeSaveFile();
 	}

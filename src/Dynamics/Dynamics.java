@@ -184,17 +184,18 @@ public class Dynamics
 		else
 			throw new Error("Wrong initial condition.");
 		
-		//Sets random cosine threshold to all nodes
-		for(int j=0; j<N; j++) 
+		//Sets given cosine threshold
+		for(int j=0; j<N; j++)
 			net.getNode(j).setThreshold(threshold);
+			
 	}
 	
 	// Sets random opinions and given cosine threshold to all nodes to given network
 	public void setInitialConditions(Network net, double threshold) {
 		setRandomInitialOpinions(net);
 		
-		//Sets random cosine threshold to all nodes
-		for(int j=0; j<N; j++) 
+		//Sets given cosine threshold
+		for(int j=0; j<N; j++)
 			net.getNode(j).setThreshold(threshold);
 	}
 	
@@ -529,16 +530,16 @@ public class Dynamics
 		s.writeDataln("Length of the opinion vector");
 		
 		s.writeDatatb("eta");
-		s.writeDatatb(pNewMessage);
-		s.writeDataln("Probability of sending new message");
+		s.writeDatatb(pEdit);
+		s.writeDataln("Probability of creating new message");
 		
 		s.writeDatatb("tau");
-		s.writeDatatb(getNodeThreshold(0));
+		s.writeDatatb(debug.c(getNodeThreshold(0)));
 		s.writeDataln("Probability of edit an information");
 		
 		s.writeDatatb("alpha");
 		s.writeDatatb(pNewMessage);
-		s.writeDataln("Probability of creating new message");
+		s.writeDataln("Probability of sending new message");
 		
 		s.writeDatatb("order");
 		s.writeDatatb(order);

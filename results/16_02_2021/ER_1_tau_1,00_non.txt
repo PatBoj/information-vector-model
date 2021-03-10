@@ -1,12 +1,12 @@
 N	1000	Number of nodes in the newtork
-<k>	6.104	Average degree
+<k>	5.812	Average degree
 network type	ER	Topology type of the network
 D	100	Length of the opinion vector
-eta	0.1	Probability of sending new message
-tau	0.3163222139504669	Probability of edit an information
-alpha	0.1	Probability of creating new message
+eta	0.0	Probability of creating new message
+tau	1,00	Probability of edit an information
+alpha	0.1	Probability of sending new message
 order	time	Order of information: by time or by similarity
-energy	-249	Energy of connections in the network
+energy	-394	Energy of connections in the network
 realizations	20	Number of independet realisations
 time steps	1000000	Number of time steps
 
@@ -100206,50 +100206,3 @@ message_id
 100193
 100194
 100195
-100196
-100197
-100198
-100199
-100200
-100201
-100202
-100203
-100204
-100205
-100206
-100207
-100208
-100209
-100210
-100211
-100212
-100213
-100214
-100215
-100216
-100217
-100218
-100219
-100220
-100221
-100222
-100223
-100224
-100225
-100226
-100227
-100228
-100229
-100230
-100231
-100232
-100233
-100234
-100235
-100236
-100237
-100238
-100239
-100240
-100241
-100242

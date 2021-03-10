@@ -9,13 +9,10 @@ import ProgramingTools.Mailer;
 public class Main {
 	public static void main(String args[]) throws InterruptedException {
 		
-		Debug d = new Debug(0);
-		
 		int n = 2;
 		double[] tau = new double[11];
 		for(int i=0; i<tau.length; i++)
 			tau[i] = -1 + i * 0.2;
-		
 		
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		
