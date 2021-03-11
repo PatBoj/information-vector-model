@@ -12,25 +12,39 @@ rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x
 parameters <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t"))})
 
 rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], network_type = rep(parameters[[i]][3,2], nrow(rawData[[i]])))})
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], alpha = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][7,2], nrow(rawData[[i]])))})
+rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
+rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], eta = rep(parameters[[i]][5,2], nrow(rawData[[i]])))})
 
 data <- lapply(rawData, function(x) {
   data.frame(
     x %>% 
-      group_by(message_id, network_type, tau, alpha) %>%
+      group_by(message_id, network_type, tau, eta) %>%
       summarise(counts = n())
     )
   })
 
 #data <- bind_rows(data, .id = "realisation")
 data <- bind_rows(data)
+data$network_type <- as.factor(data$network_type)
+data$tau <- as.factor(data$tau)
+data$eta <- as.factor(data$eta)
 
-histograms <- data.frame(
-  data %>%
-    group_by(network_type, tau, alpha) %>%
-    hist(data$counts)
-)
+newData <- vector(mode = "list")
+breaks <- 220
+
+for(i in 1:length(levels(data$network_type))) {
+  for(j in 1:length(levels(data$tau))) {
+    for(k in 1:length(levels(data$eta))) {
+      tempHist <- hist(log10(data[data$network_type == levels(data$network_type)[i] &
+                              data$tau == levels(data$tau)[j] &
+                              data$eta == levels(data$eta)[k], 5]),
+                       breaks = breaks,
+                       plot = FALSE)
+      newData[[length(newData) + 1]] <- tempHist
+    }
+  }
+}
+
 
 popularityHistogram <- function() {
   breaks <- 220
