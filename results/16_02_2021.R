@@ -1,6 +1,7 @@
 library(ggplot2)
 library(dplyr)
 library(scales)
+library(shiny)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
@@ -40,31 +41,35 @@ for(i in 1:length(levels(data$network_type))) {
                               data$eta == levels(data$eta)[k], 5]),
                        breaks = breaks,
                        plot = FALSE)
+      
+      factor <- 10^tempHist$breaks[-1] - 10^tempHist$breaks[-length(tempHist$breaks)]
+      sum <- sum(tempHist$counts/factor)
+      tempHist <- data.frame(x = tempHist$mids, y = tempHist$counts/factor/sum)
+      tempHist <- tempHist[tempHist$y != 0,]
+      
+      tempHist$network_type <- as.factor(rep(levels(data$network_type)[i], nrow(tempHist)))
+      tempHist$tau <- as.factor(rep(levels(data$tau)[j], nrow(tempHist)))
+      tempHist$eta <- as.factor(rep(levels(data$eta)[k], nrow(tempHist)))
+      
       newData[[length(newData) + 1]] <- tempHist
     }
   }
 }
 
+newData <- bind_rows(newData)
 
-popularityHistogram <- function() {
-  breaks <- 220
-  histogram <- hist(log10(data$counts), breaks = breaks)
-  factor <- 10^histogram$breaks[-1] - 10^histogram$breaks[-length(histogram$breaks)]
-  sum <- sum(histogram$counts/factor)
-  histogram <- data.frame(x = histogram$mids, y = histogram$counts/factor/sum)
-  histogram <- histogram[histogram$y != 0,]
-  
-  plot <- ggplot(data = histogram, aes(x = x, y = y)) + 
+popularityHistogram <- function(histogram) {
+  plot <- ggplot(data = histogram, aes(x = x, y = y, color = network_type, shape = eta)) + 
     geom_point(size = 3) +
     theme(
-      text=element_text(size=28),
-      axis.text=element_text(color="black"),
+      text=element_text(size = 28),
+      axis.text=element_text(color= "black"),
       axis.ticks.length = unit(0, "cm"),
-      plot.title=element_text(hjust=0.5),
-      panel.border=element_rect(fill=NA),
+      plot.title=element_text(hjust = 0.5),
+      panel.border=element_rect(fill = NA),
       panel.background=element_blank(),
-      legend.key=element_rect(fill=NA, color=NA),
-      legend.background=element_rect(fill=(alpha("white", 0))),
+      legend.key=element_rect(fill = NA, color = NA),
+      legend.background=element_rect(fill = (alpha("white", 0))),
       legend.title=element_blank(),
       legend.position=c(0.6, 0.8),
       legend.box.background=element_rect(colour = "black"),
@@ -72,13 +77,49 @@ popularityHistogram <- function() {
     ) + 
     xlab("number of shares") +
     ylab("probability density") +
+    scale_shape_manual(values = c(4, 20)) +
     scale_x_continuous(labels = math_format(10^.x),
                        limits = c(0, 3),
                        breaks = seq(0,5)) + 
     scale_y_continuous(trans = 'log10',
                        labels = trans_format("log10", math_format(10^.x)),
-                       limits = c(.3*10^-8, 10^0),
-                       breaks = 10^(-9:0)) +
+                       limits = c(.3*10^-8, .3*10^1),
+                       breaks = 10^(-9:1)) +
     annotation_logticks(sides="lb")
-  print(plot)
+  plot
 }
+
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      checkboxGroupInput("types", "Network types:",
+                         c("Random" = "ER",
+                           "Non-scale" = "BA",
+                           "Lattice" = "SQ")),
+      
+      checkboxGroupInput("edit", "Ability to edit:",
+                         c("Yes" = "0.05",
+                           "No" = "0.0")),
+      sliderInput("tau", "Threshold", min = -1, max = 1, step = 0.2, value = 0.0)
+    ),
+    
+    mainPanel(
+      plotOutput("my_histogram", height = 900)
+    )
+  )
+)
+
+server <- function(input, output) {
+  filtered <- reactive({
+    newData %>%
+      filter(network_type %in% input$types,
+             tau == format(as.numeric(input$tau), nsmall = 1),
+             eta %in% input$edit)
+  })
+  
+  output$my_histogram <- renderPlot({
+    popularityHistogram(filtered())
+  })
+}
+
+shinyApp(ui = ui, server = server)
