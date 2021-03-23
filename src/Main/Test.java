@@ -251,4 +251,12 @@ public class Test
 		
 		d.endTime();
 	}
+	
+	public void testCorrelation() {
+		int[] temp = new int[] {-1, 0, 1, 1};
+		int[] temp2 = new int[] {-1, 0, 1, -1};
+		
+		Dynamics dyn = new Dynamics();
+		System.out.println(dyn.getAgentsCorrelation(temp, temp2));
+	}
 }

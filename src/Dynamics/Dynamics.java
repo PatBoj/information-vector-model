@@ -697,6 +697,39 @@ public class Dynamics
 		return messages;
 	}
 	
+	public double getAgentsCorrelation(int[] i, int[] j) {
+		if(i.length != j.length) 
+			throw new Error("Tables length should be the same");
+		
+		int D = i.length;
+		
+		double avgX = 0;
+		double avgY = 0;
+		
+		double sdX = 0;
+		double sdY = 0;
+		
+		double r = 0;
+		
+		for(int k=0; k<D; k++) {
+			avgX += i[k];
+			avgY += j[k];
+		}
+		
+		avgX /= D;
+		avgY /= D;
+		
+		for(int k=0; k<D; k++) {
+			sdX += Math.pow(i[k] - avgX, 2);
+			sdY += Math.pow(j[k] - avgY, 2);
+			r += (i[k] - avgX) * (j[k] - avgY);
+		}
+		
+		r /= Math.sqrt(sdX * sdY);
+		
+		return r;
+	}
+	
 	public ArrayList<Message> getAllMessages() {return messages;}
 	public ArrayList<Message> getNodeMessages(int i) {return network.getNodes().get(i).getAllNodeMessages();}
 	public double getProbabilityNewMessage() {return pNewMessage;}

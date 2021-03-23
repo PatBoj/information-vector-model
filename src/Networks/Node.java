@@ -16,6 +16,9 @@ public class Node
 	// Value dosen't mean anything, it's only label of component
 	private int component; 
 	
+	// Temporary number that helps to count the distance between
+	// nodes
+	private int distance;
 	
 	/***** DYNAMICS *****/
 	
@@ -49,6 +52,7 @@ public class Node
 		messages = new ArrayList<Message>();
 		sharedMessages = new ArrayList<Message>();
 		component = -1;
+		distance = -1;
 		cosineThreshold = -2;
 	}
 	
@@ -59,6 +63,7 @@ public class Node
 		for(Link link : node.links)
 			links.add(new Link(link));
 		this.component = node.component;
+		this.distance = node.distance;
 		messages = new ArrayList<Message>();
 		for(Message msg : node.messages)
 			messages.add(new Message(msg));
@@ -133,9 +138,11 @@ public class Node
 	ArrayList<Link> getLinks() {return links;}
 	public int[] getConnection(int i) {return links.get(i).getConnection();}
 	int getComponentAssociation() {return component;}
+	int getDistance() {return distance;}
 	
 	// ~ SET ~
 	void setComponentAssociation(int c) {component = c;}
+	void setDistance(int d) {distance = d;}
 	
 	/********************/
 	/***** DYNAMICS *****/

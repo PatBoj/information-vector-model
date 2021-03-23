@@ -163,6 +163,26 @@ public class Network {
 			}
 		}
 	}
+	
+	protected void computeDistance(int index) {
+		getNode(index).setDistance(0);
+		
+		Queue<Integer> queue = new PriorityQueue<Integer>();
+		queue.offer(index);
+		
+		int tempIndex = -1;
+		int tempDistance = 0;
+		
+		while(queue.peek() != null) {
+			tempIndex = queue.poll();
+		}
+		
+		for(int i=0; i<getNodeDegree(i); i++) {
+			if(getNode(getNode(index).getConnection(i)[0]).getDistance() == -1) {
+				System.out.println("ELUWINA");
+			}
+		}
+	}
 
 	// Creates adjacency matrix
 	protected void createAdjacencyMatrix() {
@@ -218,6 +238,11 @@ public class Network {
 		for (int i = 0; i < N; i++)
 			adjMat.writeDataln(adjacencyMatrix[i]);
 		adjMat.closeWriter();
+	}
+	
+	public void resetDistances() {
+		for(int i=0; i<N; i++)
+			nodes.get(i).setDistance(-1);
 	}
 	
 	// Saves agency matrix in default directory
