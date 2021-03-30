@@ -259,4 +259,26 @@ public class Test
 		Dynamics dyn = new Dynamics();
 		System.out.println(dyn.getAgentsCorrelation(temp, temp2));
 	}
+	
+	public void testDistance() {
+		Network net = new Network(10);
+		net.addLinkNC(0, 1);
+		net.addLinkNC(0, 2);
+		net.addLinkNC(0, 3);
+		net.addLinkNC(0, 4);
+		net.addLinkNC(0, 5);
+		net.addLinkNC(1, 2);
+		net.addLinkNC(2, 3);
+		net.addLinkNC(3, 4);
+		net.addLinkNC(4, 6);
+		net.addLinkNC(5, 6);
+		net.addLinkNC(6, 7);
+		net.addLinkNC(7, 8);
+		net.addLinkNC(7, 9);
+		net.addLinkNC(8, 9);
+		
+		net.computeDistance(0);
+		for(int i=0; i<10; i++)
+			System.out.println("Node " + i + ": " + net.getNode(i).getDistance());
+	}
 }

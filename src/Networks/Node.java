@@ -138,7 +138,7 @@ public class Node
 	ArrayList<Link> getLinks() {return links;}
 	public int[] getConnection(int i) {return links.get(i).getConnection();}
 	int getComponentAssociation() {return component;}
-	int getDistance() {return distance;}
+	public int getDistance() {return distance;}
 	
 	// ~ SET ~
 	void setComponentAssociation(int c) {component = c;}

@@ -164,17 +164,41 @@ public class Network {
 		}
 	}
 	
-	protected void computeDistance(int index) {
+	public void computeDistance(int index) {
 		getNode(index).setDistance(0);
 		
 		Queue<Integer> queue = new PriorityQueue<Integer>();
 		queue.offer(index);
 		
 		int tempIndex = -1;
-		int tempDistance = 0;
+		int currentDistance = -1;
+		int lengthCounter = queue.size();
+		int neighborIndex = -1;
 		
 		while(queue.peek() != null) {
 			tempIndex = queue.poll();
+			lengthCounter--;
+			
+			if(lengthCounter == 0)
+				currentDistance++;
+			
+			for(int i=0; i<getNodeDegree(tempIndex); i++) {
+				if(getNode(tempIndex).getDistance() == -1)
+					getNode(tempIndex).setDistance(currentDistance);
+								
+				if(getNode(tempIndex).getConnection(i)[0] != i)
+					neighborIndex = getNode(tempIndex).getConnection(i)[0];
+				else
+					neighborIndex = getNode(tempIndex).getConnection(i)[1];
+				
+				if(getNode(neighborIndex).getDistance() == -1)
+					queue.offer(neighborIndex);
+				System.out.println(i);
+			}
+			System.out.println("");
+			
+			if(lengthCounter == 0)
+				lengthCounter = queue.size();
 		}
 		
 		for(int i=0; i<getNodeDegree(i); i++) {
