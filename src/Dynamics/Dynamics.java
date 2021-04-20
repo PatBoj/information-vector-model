@@ -475,10 +475,11 @@ public class Dynamics
 						save();
 						//break; // COMMENT IT IF YOU WANT TO EXCLUDE COMPETITION
 					}
-					else getDashboard(node).remove(i);
+					//else getDashboard(node).remove(i);
 				}
-				else getDashboard(node).remove(i);
+				//else getDashboard(node).remove(i);
 			}
+			getDashboard(node).clear(); // NON COMMENT IT IF YOU WANT TO EXCLUDE COMPETITION
 		}
 	}
 	
