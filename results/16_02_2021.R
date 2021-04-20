@@ -43,7 +43,7 @@ for(i in 1:length(levels(data$network_type))) {
                        plot = FALSE)
       
       factor <- 10^tempHist$breaks[-1] - 10^tempHist$breaks[-length(tempHist$breaks)]
-      sum <- sum(tempHist$counts/factor)
+      sum <- sum(tempHist$counts)
       tempHist <- data.frame(x = tempHist$mids, y = tempHist$counts/factor/sum)
       tempHist <- tempHist[tempHist$y != 0,]
       
@@ -100,7 +100,7 @@ ui <- fluidPage(
       checkboxGroupInput("edit", "Ability to edit:",
                          c("Yes" = "0.05",
                            "No" = "0.0")),
-      sliderInput("tau", "Threshold", min = -1, max = 1, step = 0.2, value = 0.0)
+      sliderInput("tau", "Threshold", min = -1, max = 1, step = 0.02, value = 0.0)
     ),
     
     mainPanel(
