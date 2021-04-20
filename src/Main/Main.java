@@ -8,9 +8,8 @@ public class Main {
 	public static void main(String args[]) throws InterruptedException {
 		//Test t = new Test();
 		//t.testDistance();
-		System.out.println("ELOELO");
-		/*
 		int n = 3;
+		
 		double[] tau = new double[11];
 		for(int i=0; i<tau.length; i++)
 			tau[i] = -1 + i * 0.2;
@@ -48,6 +47,6 @@ public class Main {
 		}
 		
 		executor.shutdown();
-		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);*/
+		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 	}
 }
