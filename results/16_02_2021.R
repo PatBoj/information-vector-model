@@ -43,6 +43,7 @@ for(i in 1:length(levels(data$network_type))) {
                        plot = FALSE)
       
       factor <- 10^tempHist$breaks[-1] - 10^tempHist$breaks[-length(tempHist$breaks)]
+      #tempHist$counts[tempHist$counts != 0] <- log10(tempHist$counts[tempHist$counts != 0])
       sum <- sum(tempHist$counts)
       tempHist <- data.frame(x = tempHist$mids, y = tempHist$counts/factor/sum)
       tempHist <- tempHist[tempHist$y != 0,]
@@ -81,10 +82,9 @@ popularityHistogram <- function(histogram) {
     scale_x_continuous(labels = math_format(10^.x),
                        limits = c(0, 3),
                        breaks = seq(0,5)) + 
-    scale_y_continuous(trans = 'log10',
-                       labels = trans_format("log10", math_format(10^.x)),
-                       limits = c(.3*10^-8, .3*10^1),
-                       breaks = 10^(-9:1)) +
+    scale_y_continuous(labels = math_format(10^.x),
+                       limits = c(-4, 2),
+                       breaks = seq(-8, 1)) +
     annotation_logticks(sides="lb")
   plot
 }
