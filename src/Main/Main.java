@@ -8,7 +8,7 @@ public class Main {
 	public static void main(String args[]) throws InterruptedException {
 		//Test t = new Test();
 		//t.testDistance();
-		int n = 3;
+		int n = 2;
 		
 		double[] tau = new double[11];
 		for(int i=0; i<tau.length; i++)
@@ -20,7 +20,7 @@ public class Main {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "ER", 0));
 		}
-		
+		/*
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "ER", 0.05));
@@ -45,7 +45,7 @@ public class Main {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "SQ", 0.05));
 		}
-		
+		*/
 		executor.shutdown();
 		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 	}

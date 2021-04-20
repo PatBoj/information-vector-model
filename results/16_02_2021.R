@@ -94,8 +94,7 @@ ui <- fluidPage(
     sidebarPanel(
       checkboxGroupInput("types", "Network types:",
                          c("Random" = "ER",
-                           "Non-scale" = "BA",
-                           "Lattice" = "SQ")),
+                           "Non-scale" = "BA")),
       
       checkboxGroupInput("edit", "Ability to edit:",
                          c("Yes" = "0.05",
