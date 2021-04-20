@@ -434,7 +434,7 @@ public class Dynamics
 			for(int i=getDashboardSize(node) - 1; i>=0; i--) {
 				cosineSimilarity = cosineSimilarity(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes());
 				// If the agent like is it goes to next condition
-				if(cosineSimilarity > getNodeThreshold(node)) {
+				if(cosineSimilarity >= getNodeThreshold(node)) {
 					alreadyShared = alreadyShared(getNodeSharedIds(node), getDashboard(node).get(i));
 					// Checks if this message was already shared (by ID)
 					if(!alreadyShared) {

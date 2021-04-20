@@ -6,7 +6,7 @@ library(shiny)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 params <- 11
-dirName <- "16_02_2021/"
+dirName <- "tests/"
 fileNames <- list.files(dirName)
 
 rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = TRUE))})
@@ -43,10 +43,10 @@ for(i in 1:length(levels(data$network_type))) {
                        plot = FALSE)
       
       factor <- 10^tempHist$breaks[-1] - 10^tempHist$breaks[-length(tempHist$breaks)]
-      #tempHist$counts[tempHist$counts != 0] <- log10(tempHist$counts[tempHist$counts != 0])
       sum <- sum(tempHist$counts)
       tempHist <- data.frame(x = tempHist$mids, y = tempHist$counts/factor/sum)
       tempHist <- tempHist[tempHist$y != 0,]
+      tempHist$y <- log10(tempHist$y)
       
       tempHist$network_type <- as.factor(rep(levels(data$network_type)[i], nrow(tempHist)))
       tempHist$tau <- as.factor(rep(levels(data$tau)[j], nrow(tempHist)))
@@ -83,9 +83,9 @@ popularityHistogram <- function(histogram) {
                        limits = c(0, 3),
                        breaks = seq(0,5)) + 
     scale_y_continuous(labels = math_format(10^.x),
-                       limits = c(-4, 2),
+                       limits = c(-7, 1.7),
                        breaks = seq(-8, 1)) +
-    annotation_logticks(sides="lb")
+    annotation_logticks()
   plot
 }
 
@@ -100,7 +100,7 @@ ui <- fluidPage(
       checkboxGroupInput("edit", "Ability to edit:",
                          c("Yes" = "0.05",
                            "No" = "0.0")),
-      sliderInput("tau", "Threshold", min = -1, max = 1, step = 0.02, value = 0.0)
+      sliderInput("tau", "Threshold", min = -1, max = 1, step = 0.2, value = 0.0)
     ),
     
     mainPanel(
