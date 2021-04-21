@@ -28,7 +28,7 @@ public class Experiments implements Runnable {
 	private String topologyType;
 	private Network net;
 	
-	Experiments(int id, double tau, String topologyType, double pEdit) {
+	Experiments(int id, double tau, String topologyType, double pEdit, int realisations) {
 		d = new Debug(0);
 		this.id = id;
 		
@@ -38,7 +38,7 @@ public class Experiments implements Runnable {
 		dimOpinion = 100;
 		this.pEdit = pEdit;
 		pNewMessage = 0.1;
-		realisations = 20;
+		this.realisations = realisations;
 		threshold = tau;
 		this.topologyType = topologyType;
 		net = new Network();
@@ -56,7 +56,7 @@ public class Experiments implements Runnable {
 		
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit);
 		
-		dyn.setSaveFile("results/tests/" + net.getTopologyType() + "_" + id + "_tau_" + d.c(threshold) + (pEdit == 0 ? "_non" : "_all") + ".txt");
+		dyn.setSaveFile("results/20_04_2021/" + net.getTopologyType() + "_" + id + "_tau_" + d.c(threshold) + (pEdit == 0 ? "_non" : "_all") + ".txt");
 		
 		dyn.setInitialConditions(threshold);
 		dyn.saveParameters("time", realisations, timeSteps);
@@ -76,32 +76,32 @@ public class Experiments implements Runnable {
 		
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
-				executor.execute(new Experiments(j+1, tau[i], "ER", 0));
+				executor.execute(new Experiments(j+1, tau[i], "ER", 0, realisations));
 		}
 		
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
-				executor.execute(new Experiments(j+1, tau[i], "ER", 0.05));
+				executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, realisations));
 		}
 		
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
-				executor.execute(new Experiments(j+1, tau[i], "BA", 0));
+				executor.execute(new Experiments(j+1, tau[i], "BA", 0, realisations));
 		}
 		
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
-				executor.execute(new Experiments(j+1, tau[i], "BA", 0.05));
+				executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, realisations));
 		}
 		
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
-				executor.execute(new Experiments(j+1, tau[i], "SQ", 0));
+				executor.execute(new Experiments(j+1, tau[i], "SQ", 0, realisations));
 		}
 		
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
-				executor.execute(new Experiments(j+1, tau[i], "SQ", 0.05));
+				executor.execute(new Experiments(j+1, tau[i], "SQ", 0.05, realisations));
 		}
 		
 		executor.shutdown();
