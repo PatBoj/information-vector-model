@@ -8,7 +8,7 @@ public class Main {
 	public static void main(String args[]) throws InterruptedException {
 		//Test t = new Test();
 		//t.testDistance();
-		int n = 2;
+		int n = 10;
 		
 		double[] tau = new double[201];
 		for(int i=0; i<tau.length; i++)
