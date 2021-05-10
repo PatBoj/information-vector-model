@@ -133,6 +133,16 @@ public class Debug
 		else return new DecimalFormat("#0" + temp).format(number);
 	}
 	
+	public double cNumber(double number, int precision) {
+		double temp = number;
+		for(int i=0; i<precision; i++)
+			temp *= 10;
+		temp = Math.round(temp);
+		for(int i=0; i<precision; i++)
+			temp /= 10;
+		return temp;
+	}
+	
 	// Announces end of the simulation
 	private void speek(String filename) {
 		AePlayWave aw = new AePlayWave(filename);
@@ -179,8 +189,22 @@ public class Debug
 		return min;
 	}
 	
-	public double getMinimumDoubleArray(double[] array) {
+	public int getMinimumInteger(ArrayList<Integer> list) {
+		int min = list.get(0);
+		for(int i=0; i<list.size(); i++)
+			if(list.get(i) < min) min = list.get(i);
+		return min;
+	}
+	
+	public double getMinimumArray(double[] array) {
 		double min = array[0];
+		for(int i=0; i<array.length; i++)
+			if(array[i] < min) min = array[i];
+		return min;
+	}
+	
+	public int getMinimumArray(int[] array) {
+		int min = array[0];
 		for(int i=0; i<array.length; i++)
 			if(array[i] < min) min = array[i];
 		return min;
@@ -204,6 +228,13 @@ public class Debug
 		return temp/list.size();
 	}
 	
+	public double getAverageFromInteger(ArrayList<Integer> list) {
+		double temp = 0;
+		for(int i=0; i<list.size(); i++)
+			temp += list.get(i);
+		return temp/list.size();
+	}
+	
 	// Return third quantile Q3 from the given list
 	public Long getThirdQuartile(ArrayList<Long> list) {
 		return list.get((int) Math.floor(3*list.size()/4.));		
@@ -221,6 +252,27 @@ public class Debug
 		double max = list.get(0);
 		for(int i=0; i<list.size(); i++)
 			if(list.get(i) > max) max = list.get(i);
+		return max;
+	}
+	
+	public int getMaximumInteger(ArrayList<Integer> list) {
+		int max = list.get(0);
+		for(int i=0; i<list.size(); i++)
+			if(list.get(i) > max) max = list.get(i);
+		return max;
+	}
+	
+	public double getMaximumArray(double[] array) {
+		double max = array[0];
+		for(int i=0; i<array.length; i++)
+			if(array[i] > max) max = array[i];
+		return max;
+	}
+	
+	public int getMaximumArray(int[] array) {
+		int max = array[0];
+		for(int i=0; i<array.length; i++)
+			if(array[i] > max) max = array[i];
 		return max;
 	}
 	
@@ -303,6 +355,62 @@ public class Debug
 		for(double element : array)
 			System.out.print(c(element) + " ");
 		System.out.println("");
+	}
+	
+	public void simpleHistogram(int[] data, int norm) {
+		int min = getMinimumArray(data);
+		int max = getMaximumArray(data);
+		int n = max - min + 1;
+		int sum = 0;
+		
+		int[][] histogram = new int[2][n];
+		for(int i=0; i<n; i++) {
+			histogram[0][i] = i + min;
+			histogram[1][i] = 0;
+		}
+			
+		for(int i=0; i<data.length; i++) {
+			sum += 1;
+			histogram[1][data[i]-min] += 1;
+		}
+		
+		for(int i=0; i<n; i++)
+			histogram[1][i] = Integer.parseInt(c((double)histogram[1][i] / sum * norm, 0));
+		
+		for(int i=0; i<n; i++) {
+			System.out.print(histogram[0][i] + " " + (i+min < 10 ? " " : ""));
+			for(int j=0; j<histogram[1][i]; j++)
+				System.out.print("0");
+			System.out.println();
+		}
+	}
+	
+	public void simpleHistogram(ArrayList<Integer> data, int norm) {
+		int min = getMinimumInteger(data);
+		int max = getMaximumInteger(data);
+		int n = max - min + 1;
+		int sum = 0;
+		
+		int[][] histogram = new int[2][n];
+		for(int i=0; i<n; i++) {
+			histogram[0][i] = i + min;
+			histogram[1][i] = 0;
+		}
+			
+		for(int i=0; i<data.size(); i++) {
+			sum += 1;
+			histogram[1][data.get(i)-min] += 1;
+		}
+		
+		for(int i=0; i<n; i++)
+			histogram[1][i] = Integer.parseInt(c((double)histogram[1][i] / sum * norm, 0));
+		
+		for(int i=0; i<n; i++) {
+			System.out.print(histogram[0][i] + " " + (i+min < 10 ? " " : ""));
+			for(int j=0; j<histogram[1][i]; j++)
+				System.out.print("0");
+			System.out.println();
+		}
 	}
 	
 	public long getTimeMS() {return stopTime-startTime;}

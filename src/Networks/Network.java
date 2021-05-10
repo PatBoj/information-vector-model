@@ -1,6 +1,7 @@
 package Networks;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
@@ -165,45 +166,30 @@ public class Network {
 	}
 	
 	public void computeDistance(int index) {
+		resetDistances();
 		getNode(index).setDistance(0);
 		
-		Queue<Integer> queue = new PriorityQueue<Integer>();
-		queue.offer(index);
+		LinkedList<Integer> queue = new LinkedList<Integer>();
+		queue.add(index);
 		
 		int tempIndex = -1;
-		int currentDistance = -1;
-		int lengthCounter = queue.size();
 		int neighborIndex = -1;
 		
 		while(queue.peek() != null) {
 			tempIndex = queue.poll();
-			lengthCounter--;
-			
-			if(lengthCounter == 0)
-				currentDistance++;
 			
 			for(int i=0; i<getNodeDegree(tempIndex); i++) {
-				if(getNode(tempIndex).getDistance() == -1)
-					getNode(tempIndex).setDistance(currentDistance);
-								
-				if(getNode(tempIndex).getConnection(i)[0] != i)
+				
+				if(getNode(tempIndex).getConnection(i)[0] != tempIndex)
 					neighborIndex = getNode(tempIndex).getConnection(i)[0];
 				else
 					neighborIndex = getNode(tempIndex).getConnection(i)[1];
 				
 				if(getNode(neighborIndex).getDistance() == -1)
-					queue.offer(neighborIndex);
-				System.out.println(i);
-			}
-			System.out.println("");
-			
-			if(lengthCounter == 0)
-				lengthCounter = queue.size();
-		}
-		
-		for(int i=0; i<getNodeDegree(i); i++) {
-			if(getNode(getNode(index).getConnection(i)[0]).getDistance() == -1) {
-				System.out.println("ELUWINA");
+					queue.add(neighborIndex);
+				
+				if(getNode(neighborIndex).getDistance() == -1 | getNode(neighborIndex).getDistance() > getNode(tempIndex).getDistance() + 1)
+					getNode(neighborIndex).setDistance(getNode(tempIndex).getDistance() + 1);
 			}
 		}
 	}

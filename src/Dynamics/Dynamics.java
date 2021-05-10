@@ -119,6 +119,21 @@ public class Dynamics
 		else return dotProduct/Math.sqrt(lOpinion * lMessage);
 	}
 	
+	private double getAgentsCosineSimilarity(int[] opinion1, int[] opinion2) {
+		
+		double lOpinion1 = 0;
+		double lOpinion2 = 0;
+		double dotProduct = 0;
+		
+		for(int i=0; i<opinion1.length; i++) {
+			lOpinion1 += opinion1[i] * opinion1[i];
+			lOpinion2 += opinion2[i] * opinion2[i];
+			dotProduct += opinion1[i] * opinion2[i];
+		}
+		
+		return dotProduct/Math.sqrt(lOpinion1 * lOpinion2);
+	}
+	
 	// Gives vector size
 	private double length(int[] vector) {
 		int squareSum = 0;
@@ -176,11 +191,11 @@ public class Dynamics
 		}
 	}
 	
-	public void setInitialConditions(Network net, double threshold, String type) {
+	public void setInitialConditions(Network net, double threshold, String type, int time) {
 		if(type.equals("random"))
 			setRandomInitialOpinions(net);
 		else if(type.equals("ising"))
-			setIsingInitialOpinions(net);
+			setIsingInitialOpinions(net, time);
 		else
 			throw new Error("Wrong initial condition.");
 		
@@ -211,22 +226,23 @@ public class Dynamics
 	// Sets random opinions and cosine threshold to all nodes to network in this class
 	public void setInitialConditions() {setInitialConditions(network);}
 	public void setInitialConditions(double threshold) {setInitialConditions(network, threshold);}
-	public void setInitialConditions(double threshold, String type) {setInitialConditions(network, threshold, type);}
+	public void setInitialConditions(double threshold, String type) {setInitialConditions(network, threshold, type, 1000);}
+	public void setInitialConditions(double threshold, String type, int time) {setInitialConditions(network, threshold, type, time);} 
+	public void setIsingInitialOpinions(Network net) {setIsingInitialOpinions(net, 1000);}
 	
-	public void setIsingInitialOpinions(Network net) {
+	public void setIsingInitialOpinions(Network net, int time) {
 		setRandomInitialOpinions(net);
 		
-		double beta = 100000; // exponent
+		double beta = 2; // exponent
 		int i = -1; // random node
 		int chi = -1; // random index of opinion vector
 		int newOpinion = -2; // new opinions in given index
 		int e = calculateWholeEnergy(net); // whole energy
 		int de = 0; // energy change
 		
-		Save s = new Save("ising.txt");
-		s.writeDataln(e);
+		//computeTheClosestSimilarity(0, s);
 		
-		for(int j=0; j<10000; j++) {
+		for(int j=0; j<time; j++) {
 			i = rnd.nextInt(N);
 			chi = rnd.nextInt(D);
 			newOpinion = (net.getNode(i).getNodeOpinion()[chi] + 1 + rnd.nextInt(2)+1) % 3 - 1;
@@ -240,11 +256,9 @@ public class Dynamics
 				net.getNode(i).setOneNodeOpinion(chi, newOpinion);
 				e += de;
 			}
-			
-			s.writeDataln(e);
+			//if((j+1) % 1000 == 0)
+			//	computeTheClosestSimilarity(j+1, s);
 		}
-		
-		s.closeWriter();
 	}
 	
 	public int calculateWholeEnergy(Network net) {
@@ -279,6 +293,82 @@ public class Dynamics
 		}
 		
 		return de;
+	}
+	
+	public void computeTheClosestSimilarity(int time, Save s) {
+		double average = 0;
+		double sum = 0;
+		for(int i=0; i<N; i++) {
+			network.resetDistances();
+			network.computeDistance(i);
+			for(int j=0; j<N; j++)
+				if(network.getNode(j).getDistance() == 1) {
+					average += getAgentsCosineSimilarity(network.getNode(j).getNodeOpinion(), network.getNode(i).getNodeOpinion());
+					sum += 1;
+				}
+		}
+		
+		s.writeDatatb(time);
+		s.writeDataln(average/sum);
+	}
+	
+	public void computeAndSaveCorrelations(int time, int energy, Save s) {
+		int pairs = N*N;
+		
+		double[][] data = new double[2][pairs];
+		
+		for(int i=0; i<N; i++) {
+			network.resetDistances();
+			network.computeDistance(i);
+			for(int j=0; j<N; j++) {
+				data[0][i*N + j] = network.getNode(j).getDistance();
+				data[1][i*N + j] = getAgentsCosineSimilarity(network.getNode(j).getNodeOpinion(), network.getNode(i).getNodeOpinion());
+			}
+		}
+		
+		int maxDistance = (int)debug.getMaximumArray(data[0]);
+		double dc = 0.05;
+		int bins = (int)(2/dc + 1);
+		
+		double[][][] histogram = new double[maxDistance+1][2][bins-1];
+		
+		for(int i=0; i<maxDistance+1; i++)
+			for(int j=0; j<bins-1; j++) {
+				histogram[i][0][j] = debug.cNumber(-0.975 + j*dc, 3);
+				histogram[i][1][j] = 0;
+			}
+		
+		for(int i=0; i<pairs; i++) {
+			if(data[0][i] != -1) {
+				for(int j=0; j<bins-2; j++) {
+					if(data[1][i] >= debug.cNumber(histogram[(int)data[0][i]][0][j] - dc/2, 3) & data[1][i] < debug.cNumber(histogram[(int)data[0][i]][0][j] + dc/2, 3)) {
+						histogram[(int)data[0][i]][1][j] += 1;		
+						break;
+					}
+				}
+				if(data[1][i] >= debug.cNumber(histogram[(int)data[0][i]][0][bins-2] - dc/2, 3) & data[1][i] <= debug.cNumber(histogram[(int)data[0][i]][0][bins-2] + dc/2, 3))
+					histogram[(int)data[0][i]][1][bins-2] += 1;		
+			}
+		}
+		
+		int sum;
+		for(int i=0; i<maxDistance+1; i++) {
+			sum = 0;
+			for(int j=0; j<bins-1; j++)
+				sum += histogram[i][1][j];
+			for(int j=0; j<bins-1; j++)
+				histogram [i][1][j] /= sum;
+		}
+		
+		for(int i=0; i<maxDistance+1; i++) {
+			for(int j=0; j<bins-1; j++) {
+				s.writeDatatb(time);
+				s.writeDatatb(energy);
+				s.writeDatatb(i);
+				s.writeDatatb(histogram[i][0][j]);
+				s.writeDataln(histogram[i][1][j]);
+			}
+		}
 	}
 	
 	// Sends message in to the network
@@ -446,7 +536,7 @@ public class Dynamics
 							
 							// Delete information
 							// if of curse length of the message is greater than 1
-							if(randomChance < pDeleteOneBit && getDashboard(node).get(i).getMessageContentAndIndexes()[0].length > 1) {
+							if(randomChance < pDeleteOneBit && getDashboard(node).get(i).getMessageContentAndIndexes()[0].length > 1 && cosineSimilarity != 1) {
 								newContent = deleteOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
 								edit = "del" + editID;
 							}

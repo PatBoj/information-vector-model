@@ -34,7 +34,7 @@ public class Experiments implements Runnable {
 		
 		N = 1000;
 		k = 6;
-		timeSteps = 1000000;
+		timeSteps = 1000;
 		dimOpinion = 100;
 		this.pEdit = pEdit;
 		pNewMessage = 0.1;

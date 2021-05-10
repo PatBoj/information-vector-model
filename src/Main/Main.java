@@ -4,10 +4,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import ProgramingTools.Debug;
+
 public class Main {
 	public static void main(String args[]) throws InterruptedException {
-		//Test t = new Test();
-		//t.testDistance();
+		
+		Test t = new Test();
+		t.testClosestSimilarity();
+		
+		/*
 		int n = 2;
 		
 		double[] tau = new double[11];
@@ -20,7 +25,7 @@ public class Main {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "ER", 0));
 		}
-		/*
+		
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "ER", 0.05));
@@ -34,8 +39,8 @@ public class Main {
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "BA", 0.05));
-		}
-		
+		}/*
+		/*
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "SQ", 0));
@@ -46,7 +51,8 @@ public class Main {
 				executor.execute(new Experiments(j+1, tau[i], "SQ", 0.05));
 		}
 		*/
-		executor.shutdown();
-		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		//executor.shutdown();
+		//executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		
 	}
 }

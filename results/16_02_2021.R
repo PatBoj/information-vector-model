@@ -6,26 +6,26 @@ library(shiny)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 params <- 11
-dirName <- "tests/"
+dirName <- "tests_hist/"
 fileNames <- list.files(dirName)
 
-rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = TRUE))})
+rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = FALSE, col.names = c("counts")))})
 parameters <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t"))})
 
 rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], network_type = rep(parameters[[i]][3,2], nrow(rawData[[i]])))})
 rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
 rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], eta = rep(parameters[[i]][5,2], nrow(rawData[[i]])))})
 
-data <- lapply(rawData, function(x) {
-  data.frame(
-    x %>% 
-      group_by(message_id, network_type, tau, eta) %>%
-      summarise(counts = n())
-    )
-  })
+#data <- lapply(rawData, function(x) {
+#  data.frame(
+#    x %>% 
+#      group_by(message_id, network_type, tau, eta) %>%
+#      summarise(counts = n())
+#    )
+#  })
 
 #data <- bind_rows(data, .id = "realisation")
-data <- bind_rows(data)
+data <- bind_rows(rawData)
 data$network_type <- as.factor(data$network_type)
 data$tau <- as.factor(data$tau)
 data$eta <- as.factor(data$eta)
@@ -38,7 +38,7 @@ for(i in 1:length(levels(data$network_type))) {
     for(k in 1:length(levels(data$eta))) {
       tempHist <- hist(log10(data[data$network_type == levels(data$network_type)[i] &
                               data$tau == levels(data$tau)[j] &
-                              data$eta == levels(data$eta)[k], 5]),
+                              data$eta == levels(data$eta)[k], 1]),
                        breaks = breaks,
                        plot = FALSE)
       
