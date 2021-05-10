@@ -7,7 +7,7 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry excluding="src/" kind="src" path=""/>
-	<classpathentry kind="lib" path="C:/Moje pliki/Eclipse/information-vector-model/external jar files/activation.jar"/>
-	<classpathentry kind="lib" path="C:/Moje pliki/Eclipse/information-vector-model/external jar files/mail.jar"/>
+	<classpathentry kind="lib" path="D:/Workspace/information-vector-model/external jar files/activation.jar"/>
+	<classpathentry kind="lib" path="D:/Workspace/information-vector-model/external jar files/mail.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
