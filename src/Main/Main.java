@@ -10,8 +10,8 @@ public class Main {
 	public static void main(String args[]) throws InterruptedException {
 		
 		Test t = new Test();
-		t.testClosestSimilarity();
 		
+		int n = 20;
 		double[] tau = new double[201];
 		for(int i=0; i<tau.length; i++)
 			tau[i] = -1 + i * 0.01;
