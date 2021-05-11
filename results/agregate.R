@@ -3,6 +3,7 @@ library(dplyr)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 params <- 11
+breaks <- 220
 dirName <- "tests/"
 fileNames <- list.files(dirName)
 realisations <- max(gsub("(^\\D+)([0-9]+)(.*)", "\\2", fileNames))
@@ -14,42 +15,45 @@ filesGroups <- lapply(trimmedFileNames, function(x) {
   })
 })
 
-rawData <- lapply(filesGroups, function(x) {
-  sapply(x, function(i) {
-    data.frame(read.table(paste(dirName, i, sep=""), skip = params, sep = "\t", header = TRUE))
+for(i in 1:length(filesGroups)) {
+  rawData <- sapply(filesGroups[[i]], function(x) {
+      data.frame(read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = TRUE))
     })
-  })
-
-parameters <- lapply(filesGroups, function(x) {
-  lapply(x, function(i) {
-      data.frame(read.table(paste(dirName, i, sep=""), nrows = params, sep = "\t"))
-    })
-  })
-
-rawData <- lapply(rawData, function(x) {
-  lapply(x, function(y) {
-    data.frame(table(y))$Freq
-  })
-})
-
-rawData <- lapply(rawData, function(x) { unlist(x, use.names=FALSE) })
-
-parameters <- lapply(parameters, function(x) { x[[1]] })
-
-trimmedFileNames<- gsub("(\\D+)(__)(.*)(\\.txt)", "\\1_\\3_hist\\4", trimmedFileNames)
-
-sapply(seq_along(trimmedFileNames), function(i) {
-  newFile <- file(paste(gsub("/", "", dirName), "_hist/", trimmedFileNames[i], sep=""), open = "wt")
   
-  apply(parameters[[i]], MARGIN=1, function(x) {
-    writeLines(x, sep="\t", newFile)
+  parameters <- lapply(filesGroups[[i]], function(x) {
+      data.frame(read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t"))
+    })
+  
+  rawData <- lapply(rawData, function(x) {
+      data.frame(table(x))$Freq
+    })
+  
+  rawData <- as.data.frame(unlist(rawData, use.names=FALSE))
+  parameters <- parameters[[1]]
+  
+  tempHist <- hist(log10(rawData[[1]]),
+                   breaks = breaks,
+                   plot = FALSE)
+    
+  factor <- 10^tempHist$breaks[-1] - 10^tempHist$breaks[-length(tempHist$breaks)]
+  sum <- sum(tempHist$counts)
+  tempHist <- data.frame(x = tempHist$mids, y = tempHist$counts/factor/sum)
+  tempHist <- tempHist[tempHist$y != 0,]
+  tempHist$y <- log10(tempHist$y)
+  
+  trimmed <- gsub("(\\D+)(__)(.*)(\\.txt)", "\\1_\\3_hist\\4", trimmedFileNames[i])
+  newFile <- file(paste(gsub("/", "", dirName), "_hist/", trimmed, sep=""), open = "wt")
+    
+  apply(parameters, MARGIN=1, function(x) {
+    writeLines(paste(x, collapse="\t"), sep="", newFile)
     writeLines("", newFile)
   })
   writeLines("", newFile)
-  
-  sapply(rawData[[i]], function(x) {
-    writeLines(as.character(x), newFile)
+    
+  apply(tempHist, MARGIN=1, function(x) {
+    writeLines(paste(as.character(x), collapse="\t"), sep="", newFile)
+    writeLines("", newFile)
   })
-  
-  close(fileConn)
-})
+    
+  close(newFile)
+}

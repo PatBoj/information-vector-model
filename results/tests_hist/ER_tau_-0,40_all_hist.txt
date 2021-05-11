@@ -1,213 +1,45 @@
-N	1000	Number of nodes in the newtork	
-<k>	6.052	Average degree	
-network type	ER	Topology type of the network	
-D	100	Length of the opinion vector	
-eta	0.05	Probability of creating new message	
-tau	-0.4	Probability of edit an information	
-alpha	0.1	Probability of sending new message	
-order	time	Order of information: by time or by similarity	
-energy	500	Energy of connections in the network	
-realizations	20	Number of independet realisations	
-time steps	1000	Number of time steps	
+N	1000	Number of nodes in the newtork
+<k>	6.052	Average degree
+network type	ER	Topology type of the network
+D	100	Length of the opinion vector
+eta	0.05	Probability of creating new message
+tau	-0.4	Probability of edit an information
+alpha	0.1	Probability of sending new message
+order	time	Order of information: by time or by similarity
+energy	500	Energy of connections in the network
+realizations	20	Number of independet realisations
+time steps	1000	Number of time steps
 
-50
-32
-6
-48
-2
-28
-1
-43
-21
-31
-33
-9
-20
-12
-17
-10
-7
-40
-28
-1
-4
-31
-18
-18
-4
-18
-15
-9
-14
-18
-7
-22
-11
-20
-5
-2
-10
-25
-36
-22
-20
-4
-4
-2
-17
-8
-1
-4
-3
-1
-1
-2
-4
-6
-3
-16
-1
-1
-1
-2
-5
-3
-9
-1
-1
-6
-1
-5
-10
-1
-1
-3
-3
-1
-1
-1
-2
-2
-2
-2
-2
-2
-1
-2
-1
-1
-1
-2
-1
-1
-1
-2
-11
-2
-13
-11
-21
-31
-25
-6
-6
-3
-21
-15
-28
-26
-5
-1
-15
-8
-1
-1
-8
-5
-1
-13
-1
-1
-38
-2
-4
-9
-3
-1
-7
-21
-7
-13
-1
-6
-9
-6
-11
-4
-6
-7
-1
-16
-1
-1
-11
-15
-5
-2
-2
-6
-9
-17
-4
-1
-1
-1
-7
-14
-8
-4
-13
-2
-1
-4
-4
-6
-1
-3
-1
-6
-8
-1
-1
-1
-1
-5
-3
-1
-1
-4
-1
-1
-9
-1
-3
-3
-4
-1
-1
-1
-1
-1
-2
-1
-1
-1
-1
-1
-1
-2
-1
-1
-1
-1
-1
+0.005	1.14249201646074
+0.305	0.3517979545518
+0.475	-0.099028655023895
+0.605	-0.12429330450388
+0.695	-0.515323300167859
+0.775	-0.399028655023894
+0.845	-0.732270089798475
+0.905	-0.871451335846098
+0.955	-0.775323300167861
+0.995	-1.18330008546246
+1.045	-1.0114513358461
+1.075	-1.74042134018212
+1.115	-1.17836134885414
+1.145	-1.50939134451814
+1.175	-1.23836134885416
+1.205	-1.56939134451814
+1.235	-1.42330008546246
+1.255	-1.31836134885416
+1.305	-1.49330008546246
+1.325	-1.38836134885416
+1.345	-1.70939134451814
+1.395	-1.75939134451814
+1.415	-2.08042134018212
+1.445	-1.63330008546245
+1.495	-1.68330008546246
+1.505	-2.17042134018212
+1.515	-2.18042134018212
+1.555	-2.22042134018212
+1.575	-2.24042134018212
+1.605	-2.27042134018212
+1.635	-2.30042134018212
+1.685	-2.35042134018212
+1.695	-2.36042134018212

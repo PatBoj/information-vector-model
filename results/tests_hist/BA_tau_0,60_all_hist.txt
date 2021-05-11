@@ -1,206 +1,31 @@
-N	1000	Number of nodes in the newtork	
-<k>	5.988	Average degree	
-network type	BA	Topology type of the network	
-D	100	Length of the opinion vector	
-eta	0.05	Probability of creating new message	
-tau	0.6	Probability of edit an information	
-alpha	0.1	Probability of sending new message	
-order	time	Order of information: by time or by similarity	
-energy	136	Energy of connections in the network	
-realizations	20	Number of independet realisations	
-time steps	1000	Number of time steps	
+N	1000	Number of nodes in the newtork
+<k>	5.988	Average degree
+network type	BA	Topology type of the network
+D	100	Length of the opinion vector
+eta	0.05	Probability of creating new message
+tau	0.6	Probability of edit an information
+alpha	0.1	Probability of sending new message
+order	time	Order of information: by time or by similarity
+energy	136	Energy of connections in the network
+realizations	20	Number of independet realisations
+time steps	1000	Number of time steps
 
-3
-15
-20
-1
-1
-2
-1
-3
-1
-28
-1
-3
-1
-1
-1
-63
-9
-7
-1
-1
-1
-1
-1
-1
-1
-1
-1
-58
-1
-1
-1
-1
-6
-1
-3
-1
-1
-1
-1
-1
-4
-2
-1
-2
-7
-1
-1
-1
-1
-1
-2
-1
-1
-1
-1
-2
-1
-1
-2
-1
-1
-1
-3
-5
-1
-1
-1
-1
-1
-1
-3
-1
-1
-2
-1
-1
-1
-1
-1
-1
-1
-1
-1
-2
-1
-1
-1
-1
-1
-1
-1
-1
-43
-1
-1
-1
-2
-8
-1
-1
-1
-2
-3
-14
-2
-1
-1
-31
-1
-1
-1
-1
-2
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-2
-1
-1
-1
-1
-1
-1
-1
-1
-1
-33
-2
-1
-1
-1
-1
-1
-1
-1
-1
-10
-3
-1
-1
-1
-2
-8
-1
-1
-2
-1
-2
-1
-4
-2
-1
-1
-2
-1
-1
-1
-1
-1
-4
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-2
-1
-1
-2
-1
-2
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
+0.005	1.5033354794034
+0.305	0.38739566813035
+0.475	-0.221937025699914
+0.605	-0.777905757972193
+0.695	-1.34502701269185
+0.775	-1.42502701269186
+0.845	-1.19399701702787
+0.905	-1.25399701702787
+0.955	-1.60502701269186
+0.995	-1.64502701269185
+1.145	-1.79502701269185
+1.175	-1.82502701269185
+1.305	-1.95502701269186
+1.445	-2.09502701269185
+1.495	-2.14502701269186
+1.515	-2.16502701269185
+1.635	-2.28502701269185
+1.765	-2.41502701269185
+1.795	-2.44502701269186

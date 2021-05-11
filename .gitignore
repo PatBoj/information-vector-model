@@ -1,3 +1,10 @@
 .classpath
 results/.Rhistory
 /bin/
+results/20_04_2021/
+results/20_04_2021_other/
+results/ising_test/
+results/processed_files/
+results/single files/
+results/tests/
+results/test_hist/

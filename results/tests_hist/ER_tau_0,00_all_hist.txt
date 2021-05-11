@@ -1,222 +1,38 @@
-N	1000	Number of nodes in the newtork	
-<k>	5.928	Average degree	
-network type	ER	Topology type of the network	
-D	100	Length of the opinion vector	
-eta	0.05	Probability of creating new message	
-tau	0.0	Probability of edit an information	
-alpha	0.1	Probability of sending new message	
-order	time	Order of information: by time or by similarity	
-energy	-175	Energy of connections in the network	
-realizations	20	Number of independet realisations	
-time steps	1000	Number of time steps	
+N	1000	Number of nodes in the newtork
+<k>	5.928	Average degree
+network type	ER	Topology type of the network
+D	100	Length of the opinion vector
+eta	0.05	Probability of creating new message
+tau	0.0	Probability of edit an information
+alpha	0.1	Probability of sending new message
+order	time	Order of information: by time or by similarity
+energy	-175	Energy of connections in the network
+realizations	20	Number of independet realisations
+time steps	1000	Number of time steps
 
-2
-60
-56
-12
-7
-28
-6
-4
-5
-14
-14
-17
-15
-28
-10
-23
-2
-3
-7
-3
-3
-7
-5
-1
-13
-8
-8
-13
-1
-1
-2
-5
-3
-13
-2
-2
-4
-3
-3
-1
-1
-1
-8
-2
-2
-1
-10
-2
-4
-3
-3
-9
-1
-6
-2
-1
-1
-7
-7
-3
-1
-7
-3
-2
-3
-1
-1
-2
-1
-2
-1
-1
-2
-4
-1
-1
-1
-1
-2
-2
-3
-2
-1
-1
-1
-1
-1
-1
-1
-13
-10
-17
-2
-15
-8
-39
-4
-19
-2
-15
-28
-32
-5
-7
-1
-6
-1
-1
-4
-1
-4
-20
-12
-4
-6
-2
-65
-5
-2
-42
-7
-3
-24
-13
-17
-7
-8
-3
-9
-4
-9
-9
-4
-5
-6
-4
-7
-1
-1
-2
-5
-4
-2
-3
-3
-4
-3
-1
-2
-1
-12
-1
-4
-3
-1
-3
-6
-2
-4
-7
-4
-2
-5
-3
-2
-1
-2
-1
-1
-2
-2
-1
-3
-1
-2
-2
-1
-1
-1
-1
-1
-1
-1
-6
-2
-1
-1
-2
-1
-1
-4
-2
-1
-3
-1
-2
-1
-1
-1
-1
-1
-2
-1
-1
-3
-1
-1
-1
-1
-1
+0.005	1.13663022520528
+0.305	0.566857923271738
+0.475	0.202283258522042
+0.605	-0.0589956561172747
+0.695	-0.476354590503602
+0.775	-0.614346537481292
+0.845	-0.488051892337324
+0.905	-0.890474573159529
+0.955	-1.03738458616759
+0.995	-1.20232332277589
+1.075	-1.28232332277589
+1.115	-1.10047457315952
+1.145	-1.52841458183157
+1.175	-1.38232332277589
+1.235	-1.44232332277589
+1.275	-1.95944457749555
+1.305	-1.98944457749555
+1.365	-2.04944457749555
+1.385	-2.06944457749555
+1.445	-1.65232332277588
+1.505	-2.18944457749555
+1.595	-2.27944457749555
+1.625	-2.30944457749555
+1.745	-2.42944457749555
+1.775	-2.45944457749555
+1.815	-2.49944457749555
