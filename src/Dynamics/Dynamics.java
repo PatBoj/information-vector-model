@@ -2,15 +2,16 @@ package Dynamics;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Random;
+import java.util.Set;
 
 import javax.naming.ldap.Rdn;
 
 import Main.Save;
 import Networks.Network;
 import Networks.Node;
-import ProgramingTools.Debug;
-import ProgramingTools.Time;
+import ProgramingTools.Tools;
 
 public class Dynamics 
 {	
@@ -30,6 +31,7 @@ public class Dynamics
 	
 	// Number of different informations in the network, 
 	// when agent sends new message this number is going up
+	// It's just an id of a message
 	private int nMsg;
 	
 	// Probability of sending new message by agent
@@ -47,22 +49,18 @@ public class Dynamics
 	// Probability of change one bit of information
 	private double pChangeOneBit;
 	
+	// Cosine threshold
+	private double cosineThreshold;
+	
 	// List of all messages
 	private ArrayList<Message> messages;
 	
-	// Unique id to edits
-	private int editID;
-	
-	// Just debug
-	private Debug debug;
-	
-	// Saving data to file
-	private Save s;
+	// Unique id of edits
+	//private int editID;
 	
 	// ~ CONSTRUCTORS ~
 	// Constructor #1
-	public Dynamics(Network network, int lenghtOfOpinionVector, double pNewMessage, double pEdit)
-	{
+	public Dynamics(Network network, int lenghtOfOpinionVector, double pNewMessage, double pEdit, double cosineThreshold) {
 		if(lenghtOfOpinionVector <= 0)
 			throw new Error("Length of opinion vector must be greater than zero.");
 		if(pNewMessage < 0 || pNewMessage > 1)
@@ -75,7 +73,7 @@ public class Dynamics
 		this.pNewMessage = pNewMessage;
 		this.pEdit = pEdit;
 		D = lenghtOfOpinionVector;
-		editID = 0;
+		//editID = 0;
 		
 		nMsg = 0;
 		messages = new ArrayList<Message>();
@@ -84,20 +82,105 @@ public class Dynamics
 		pAddOneBit = (double)1/3;
 		pChangeOneBit = (double)1/3;
 		
-		setInitialConditions();
+		this.cosineThreshold = cosineThreshold;
 		
-		debug = new Debug(0);
+		setInitialOpinions();
+	}
+	
+	// ~ INITIAL CONDITIONS ~
+	
+	// Sets initial opinions based on Ising model
+	public void setInitialOpinions(Network net, int time) {
+		setInitialOpinions(net);
+		
+		double beta = 2; // exponent
+		int i = -1; // random node
+		int changeIndex = -1; // random index of opinion vector
+		int newOpinion = -2; // new opinion in given index
+		int e = calculateWholeEnergy(net); // whole energy of the system
+		int de = 0; // energy change
+		
+		for(int j=0; j<time; j++) {
+			i = rnd.nextInt(N);
+			changeIndex = rnd.nextInt(D);
+			newOpinion = (net.getNode(i).getNodeOpinion()[changeIndex] + 1 + rnd.nextInt(2)+1) % 3 - 1;
+			de = calculateEnergyChange(net, i, newOpinion, changeIndex);
+			
+			if(de < 0) {
+				net.getNode(i).setOneNodeOpinion(changeIndex, newOpinion);
+				e += de;
+			}
+			else if(Math.exp(- beta * de) > rnd.nextDouble()) {
+				net.getNode(i).setOneNodeOpinion(changeIndex, newOpinion);
+				e += de;
+			}
+			//if((j+1) % 1000 == 0)
+			//	computeTheClosestSimilarity(j+1, s);
+		}
 	}
 
-	// Constructor #2
-	public Dynamics(Network network, double pNewMessage, double pEdit) {this(network, 100, pNewMessage, pEdit);}
+	// Sets random initial opinions for every agent
+	public void setInitialOpinions(Network net) {
+		int[] tempOpinion = new int[D];
+		int tempSumOpinion;
+		int i = 0;
+			
+		while(i < N) {
+			tempSumOpinion = 0;
+			for(int j=0; j<D; j++) {
+				tempOpinion[j] = rnd.nextInt(3)-1;
+				tempSumOpinion += tempOpinion[j]*tempOpinion[j]; // non-zero length vectors only 
+			}
+
+			if(tempSumOpinion != 0) {
+				net.getNode(i).setNodeOpinion(tempOpinion.clone());
+				i++;
+			}
+		}
+	}
 	
-	// Constructor #3
-	public Dynamics(Network network) {this(network, 0.005, 0.05);}
+	// Sets Ising initial opinions based on the given time
+	public void setInitialOpinions(int time) {
+		if(time !=0) setInitialOpinions(network, time);
+		else setInitialOpinions(network);
+	}
 	
-	// Default constructor
-	public Dynamics() {this(new Network());};
+	// Sets random initial opinions
+	public void setInitialOpinions() {setInitialOpinions(network);}
 	
+	// Calculates whole energy of the system
+	// it's sum of product of every element in the vector of every pair in the network
+	private int calculateWholeEnergy(Network net) {
+		int e = 0;
+		int neighborIndex = -1;
+			
+		for(int i=0; i<N; i++)
+			for(int j=0; j<net.getNodeDegree(i); j++) {
+				neighborIndex = net.getNeighbourIndex(i, j);
+				for(int k=0; k<D; k++)
+					e -= net.getNode(i).getNodeOpinion()[k] * net.getNode(neighborIndex).getNodeOpinion()[k];
+			}
+			
+		return e/2;
+	}
+	
+	// Calculates energy change when one opinion was change
+	private int calculateEnergyChange(Network net, int i, int newValue, int changeIndex) {
+		if(changeIndex < 0 | changeIndex >= D)
+			throw new Error("Change index out of bound");
+			
+		int de = 0;
+		int neighborIndex = -1;
+			
+		for(int j=0; j<net.getNodeDegree(i); j++) {
+			neighborIndex = net.getNeighbourIndex(i, j);
+			de += net.getNode(i).getNodeOpinion()[changeIndex] * net.getNode(neighborIndex).getNodeOpinion()[changeIndex];
+			de -= newValue * net.getNode(neighborIndex).getNodeOpinion()[changeIndex];
+		}
+			
+		return de;
+	}
+
 	// ~ METHODS ~
 	
 	// Cosine similarity
@@ -115,215 +198,124 @@ public class Dynamics
 			dotProduct += opinion[message[1][i]] * message[0][i];
 		}
 		
-		// when agent has neutral opinion on something it's randomly post it
+		// when agent has neutral opinion on something he's randomly post it
 		if(lOpinion == 0 || lMessage == 0) return rnd.nextDouble();
 		else return dotProduct/Math.sqrt(lOpinion * lMessage);
 	}
 	
-	// Gives vector size
-	private double length(int[] vector) {
-		int squareSum = 0;
-		for(int i=0; i<vector.length; i++)
-			squareSum += vector[i]*vector[i];
-		return Math.sqrt(squareSum);
-	}
-	
-	// Sorts messages by time
-	private ArrayList<Message> sortByTime(ArrayList<Message> messages) {
-		int tempMax;
-		int tempIndex;
-		int tempSize = messages.size();
-		ArrayList<Message> tempMessages = new ArrayList<Message>(tempSize);
-		
-		for(int i=0; i<tempSize; i++)
-		{
-			tempMax = messages.get(0).getTime();
-			tempIndex = 0;
-			
-			for(int j=1; j<messages.size(); j++) {
-				if(messages.get(j).getTime() >= tempMax) {
-					tempMax = messages.get(j).getTime();
-					tempIndex = j;
-				}
-			}
-			
-			tempMessages.add(messages.get(tempIndex));
-			messages.remove(tempIndex);
-		}
-		
-		return tempMessages;
+	// Get agents cosine similarity
+	private double agentsSimilarity(int[] opinion1, int[] opinion2) {
+		return Tools.cosine(opinion1, opinion2);
 	}
 	
 	// Gets last shared message
 	private Message getLastMessage() {return messages.get(messages.size()-1);}
 	
-	// Sets initial opinions for every agent
-	private void setRandomInitialOpinions(Network net) {
-		int[] tempOpinion = new int[D];
-		int tempSumOpinion;
-		int i = 0;
+	// Computes the closes similarity of the agents
+	private void computeTheClosestSimilarity(int time, Save s) {
+		double sum = 0;
+		double counts = 0;
 		
-		while(i < N) {
-			tempSumOpinion = 0;
-			for(int j=0; j<D; j++) {
-				tempOpinion[j] = rnd.nextInt(3)-1;
-				tempSumOpinion += tempOpinion[j]*tempOpinion[j]; // non-zero length vectors only 
-			}
-
-			if(tempSumOpinion != 0) {
-				net.getNode(i).setNodeOpinion(tempOpinion.clone());
-				i++;
-			}
-		}
-	}
-	
-	public void setInitialConditions(Network net, double threshold, String type) {
-		if(type.equals("random"))
-			setRandomInitialOpinions(net);
-		else if(type.equals("ising"))
-			setIsingInitialOpinions(net);
-		else
-			throw new Error("Wrong initial condition.");
-		
-		//Sets random cosine threshold to all nodes
-		for(int j=0; j<N; j++) 
-			net.getNode(j).setThreshold(threshold);
-	}
-	
-	// Sets random opinions and given cosine threshold to all nodes to given network
-	public void setInitialConditions(Network net, double threshold) {
-		setRandomInitialOpinions(net);
-		
-		//Sets random cosine threshold to all nodes
-		for(int j=0; j<N; j++) 
-			net.getNode(j).setThreshold(threshold);
-	}
-	
-	// Sets random opinions and random cosine threshold to all nodes to given network
-	public void setInitialConditions(Network net) {
-		setRandomInitialOpinions(net);
-		
-		//Sets random cosine threshold to all nodes
-		for(int j=0; j<N; j++) 
-			net.getNode(j).setThreshold(2 * rnd.nextDouble() - 1);
-	}
-	
-	// Sets random opinions and cosine threshold to all nodes to network in this class
-	public void setInitialConditions() {setInitialConditions(network);}
-	public void setInitialConditions(double threshold) {setInitialConditions(network, threshold);}
-	public void setInitialConditions(double threshold, String type) {setInitialConditions(network, threshold, type);}
-	
-	public void setIsingInitialOpinions(Network net) {
-		setRandomInitialOpinions(net);
-		
-		double beta = 100000; // exponent
-		int i = -1; // random node
-		int chi = -1; // random index of opinion vector
-		int newOpinion = -2; // new opinions in given index
-		int e = calculateWholeEnergy(net); // whole energy
-		int de = 0; // energy change
-		
-		Save s = new Save("ising.txt");
-		s.writeDataln(e);
-		
-		for(int j=0; j<10000; j++) {
-			i = rnd.nextInt(N);
-			chi = rnd.nextInt(D);
-			newOpinion = (net.getNode(i).getNodeOpinion()[chi] + 1 + rnd.nextInt(2)+1) % 3 - 1;
-			de = calculateEnergyChange(net, i, newOpinion, chi);
+		for(int i=0; i<N; i++) {
+			network.computeDistance(i);
 			
-			if(de < 0) {
-				net.getNode(i).setOneNodeOpinion(chi, newOpinion);
-				e += de;
-			}
-			else if(Math.exp(- beta * de) > rnd.nextDouble()) {
-				net.getNode(i).setOneNodeOpinion(chi, newOpinion);
-				e += de;
-			}
-			
-			s.writeDataln(e);
+			for(int j=0; j<N; j++)
+				if(network.getNode(j).getDistance() == 1) {
+					sum += agentsSimilarity(network.getNode(j).getNodeOpinion(), network.getNode(i).getNodeOpinion());
+					counts += 1;
+				}
 		}
 		
-		s.closeWriter();
+		s.writeDatatb(time);
+		s.writeDataln(sum/counts);
 	}
 	
-	public int calculateWholeEnergy(Network net) {
-		int e = 0;
-		int connectionIndex = -1;
-		int neighborIndex = -1;
+	// Computes and saves all similarities of the agents based on the distance between them
+	// also creates histogram
+	public void computeAndSaveCorrelations(int time, int energy, Save s) {
+		int pairs = N*N;
 		
-		for(int i=0; i<N; i++)
-			for(int j=0; j<net.getNodeDegree(i); j++) {
-				connectionIndex = net.getNode(i).getConnection(j)[0] != i ? 0 : 1;
-				neighborIndex = net.getNode(i).getConnection(j)[connectionIndex];
-				for(int k=0; k<D; k++)
-					e -= net.getNode(i).getNodeOpinion()[k] * net.getNode(neighborIndex).getNodeOpinion()[k];
+		double[][] data = new double[2][pairs];
+		
+		for(int i=0; i<N; i++) {
+			network.resetDistances();
+			network.computeDistance(i);
+			for(int j=0; j<N; j++) {
+				data[0][i*N + j] = network.getNode(j).getDistance();
+				data[1][i*N + j] = agentsSimilarity(network.getNode(j).getNodeOpinion(), network.getNode(i).getNodeOpinion());
 			}
-		
-		return e/2;
-	}
-	
-	public int calculateEnergyChange(Network net, int i, int newValue, int chi) {
-		if(chi < 0 | chi >= D)
-			throw new Error("Change index out of bound");
-		
-		int de = 0;
-		int connectionIndex = -1;
-		int neighborIndex = -1;
-		
-		for(int j=0; j<net.getNodeDegree(i); j++) {
-			connectionIndex = net.getNode(i).getConnection(j)[0] != i ? 0 : 1;
-			neighborIndex = net.getNode(i).getConnection(j)[connectionIndex];
-			de += net.getNode(i).getNodeOpinion()[chi] * net.getNode(neighborIndex).getNodeOpinion()[chi];
-			de -= newValue * net.getNode(neighborIndex).getNodeOpinion()[chi];
 		}
 		
-		return de;
+		int maxDistance = (int)Tools.getMaximum(data[0]);
+		double dc = 0.05;
+		int bins = (int)(2/dc + 1);
+		
+		double[][][] histogram = new double[maxDistance+1][2][bins-1];
+		
+		for(int i=0; i<maxDistance+1; i++)
+			for(int j=0; j<bins-1; j++) {
+				histogram[i][0][j] = Tools.convertToDouble(-0.975 + j*dc, 3);
+				histogram[i][1][j] = 0;
+			}
+		
+		for(int i=0; i<pairs; i++) {
+			if(data[0][i] != -1) {
+				for(int j=0; j<bins-2; j++) {
+					if(data[1][i] >= Tools.convertToDouble(histogram[(int)data[0][i]][0][j] - dc/2, 3) & data[1][i] < Tools.convertToDouble(histogram[(int)data[0][i]][0][j] + dc/2, 3)) {
+						histogram[(int)data[0][i]][1][j] += 1;		
+						break;
+					}
+				}
+				if(data[1][i] >= Tools.convertToDouble(histogram[(int)data[0][i]][0][bins-2] - dc/2, 3) & data[1][i] <= Tools.convertToDouble(histogram[(int)data[0][i]][0][bins-2] + dc/2, 3))
+					histogram[(int)data[0][i]][1][bins-2] += 1;		
+			}
+		}
+		
+		int sum;
+		for(int i=0; i<maxDistance+1; i++) {
+			sum = 0;
+			for(int j=0; j<bins-1; j++)
+				sum += histogram[i][1][j];
+			for(int j=0; j<bins-1; j++)
+				histogram [i][1][j] /= sum;
+		}
+		
+		for(int i=0; i<maxDistance+1; i++) {
+			for(int j=0; j<bins-1; j++) {
+				s.writeDatatb(time);
+				s.writeDatatb(energy);
+				s.writeDatatb(i);
+				s.writeDatatb(histogram[i][0][j]);
+				s.writeDataln(histogram[i][1][j]);
+			}
+		}
 	}
+	
+	// ~ ACTUAL DYNAMICS ~
 	
 	// Sends message in to the network
 	public void sendRandomMessage(int sourceNode, int time) {
 		nMsg++;
-		int mLenght = rnd.nextInt((int)(.08*D))+1;
+		int mLength = rnd.nextInt((int)Tools.convertToDouble(.14*D, 0)) + 1;
 		
-		int[] tempIndexes = new int[mLenght];
-		boolean distinct = false;
-		int[] messageContent = new int[mLenght];
+		ArrayList<Integer> indexes = new ArrayList<Integer>(D);
+		for(int i=0; i<D; i++)
+			indexes.add(i);
+		
+		int[] message = new int[mLength];
 		boolean zeroLength = true;
 		
 		while(zeroLength) {
-			distinct = false;
-			while(!distinct) {
-				for(int i=0; i<mLenght; i++)
-					tempIndexes[i] = rnd.nextInt(D);
-				
-				distinct = true;
-				for(int i=0; i<mLenght-1; i++)
-					if(tempIndexes[i] == tempIndexes[i+1]) {
-						distinct = false;
-						break;
-					}
-			}
+			Collections.shuffle(indexes);
 			
-			for(int i=0; i<mLenght; i++)
-				messageContent[i] = 0;
-			
-			for(int i=0; i<mLenght; i++) 
-				messageContent[i] = getNodeOpinion(i)[tempIndexes[i]];
-			if(length(messageContent) != 0) zeroLength = false;
+			for(int i=0; i<mLength; i++) 
+				message[i] = getNodeOpinion(i)[indexes.get(i)];
+			if(Tools.length(message) != 0) zeroLength = false;
 		}
 		
-		messages.add(new Message(new int[][] {messageContent.clone(), tempIndexes.clone()}, time, sourceNode, nMsg));
+		messages.add(new Message(new int[][] {message.clone(), Tools.convertFromArrayList(indexes, mLength)}, time, nMsg));
 		setMessage(sourceNode, getLastMessage());
 		setDashboard(sourceNode, getLastMessage());
-	}
-	
-	// Checks if message is the same as node opinion
-	private boolean isIdentical(int[] nodeOpinion, int[][] content) {	
-		for(int i=0; i<content[0].length; i++)
-			if(nodeOpinion[content[1][i]] != content[0][i])
-				return false;
-		return true;
 	}
 	
 	/*private boolean alreadyShared(ArrayList<Message> sendByNode, Message neighborMessage) {
@@ -338,8 +330,8 @@ public class Dynamics
 	
 	// Checks if given message was already shared by node
 	private boolean alreadyShared(ArrayList<Integer> sendByNode, Message neighborMessage) {		
-		for(int i=0; i<sendByNode.size(); i++)
-			if(sendByNode.get(i).equals(neighborMessage.getId().get(0)))
+		for(int i=sendByNode.size()-1; i>=0; i--)
+			if(sendByNode.get(i).equals(neighborMessage.getId()))
 				return true;
 		return false;
 	}
@@ -415,87 +407,84 @@ public class Dynamics
 	}
 	
 	// One time step
-	private void oneStep(int time) {
+	private void oneStep(Save s, int time) {
 		int node = rnd.nextInt(N); // pick random node from the network
-		//ArrayList<Message> neighborMessages; // all neighbors messages
 		boolean alreadyShared; // true if message with this ID was shared by agent
 		double cosineSimilarity; // cosine similarity between message and node opinion
 		int[][] newContent; // new message content
-		String edit = "";
+		// String edit = ""; // show change in the message
 		
 		// Sends new message to the network
 		if(rnd.nextDouble() < pNewMessage) {
 			sendRandomMessage(rnd.nextInt(N), time);
-			save();
+			save(s);
 		} else { // Share message
-			//neighborMessages = sortByTime(getNeighborMessages(node)); // gets all neighbor messages and sorts them by time
 			// Checks if the last neighbor message is similar to the node's opinion vector
 			// this loop is for all messages shared by node's neighbors
 			for(int i=getDashboardSize(node) - 1; i>=0; i--) {
 				cosineSimilarity = cosineSimilarity(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes());
-				// If the agent like is it goes to next condition
-				if(cosineSimilarity > getNodeThreshold(node)) {
+				// If the agent like it the message goes to next condition
+				if(cosineSimilarity >= cosineThreshold) {
 					alreadyShared = alreadyShared(getNodeSharedIds(node), getDashboard(node).get(i));
 					// Checks if this message was already shared (by ID)
 					if(!alreadyShared) {
 						// Message can be edit before sharing
 						// but if it's matching the node's opinion it shouldn't be changed
-						if(!isIdentical(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()) && rnd.nextDouble() < pEdit) {
+						if(cosineSimilarity != 1 && rnd.nextDouble() < pEdit) {
 							double randomChance = rnd.nextDouble();
-							editID++;
+							//editID++;
 							
 							// Delete information
 							// if of curse length of the message is greater than 1
 							if(randomChance < pDeleteOneBit && getDashboard(node).get(i).getMessageContentAndIndexes()[0].length > 1) {
 								newContent = deleteOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
-								edit = "del" + editID;
+								//edit = "del" + editID;
 							}
 							// Add new information
 							else if(randomChance < pDeleteOneBit + pAddOneBit) {
 								newContent = addOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
-								edit = "add" + editID;
+								//edit = "add" + editID;
 							}
 							// Change information
 							else if (randomChance <= pDeleteOneBit + pAddOneBit + pChangeOneBit) {
 								newContent = changeOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
-								edit = "chg" + editID;
+								//edit = "chg" + editID;
 							}
-							
 							// Else throw an error
 							else 
 								throw new Error("Something wrong with probabilities of changing, deleting and adding new pice of information.");
 						}
 						else newContent = getDashboard(node).get(i).getMessageContentAndIndexes().clone();
-						messages.add(new Message(newContent.clone(), time, new int[] {i, node}, getDashboard(node).get(i).getId()));
-						getLastMessage().addEdit(getDashboard(node).get(i).getEdit());
-						if(edit != "") getLastMessage().addEdit(edit);
+						messages.add(new Message(newContent.clone(), time, getDashboard(node).get(i).getId()));
+						//getLastMessage().addEdit(getDashboard(node).get(i).getEdit());
+						//if(edit != "") getLastMessage().addEdit(edit);
+						
 						setMessage(node, getLastMessage());
 						setDashboard(node, getLastMessage());
 						
-						save();
-						break;
+						save(s);
+						break; // COMMENT IT IF YOU WANT TO EXCLUDE COMPETITION
 					}
+					else getDashboard(node).remove(i);
 				}
+				else getDashboard(node).remove(i);
 			}
+			//getDashboard(node).clear(); // NON COMMENT IT IF YOU WANT TO EXCLUDE COMPETITION
 		}
 	}
 	
-	public void run(int maxTime) {
+	// Runs entire simulation
+	public void run(Save s, int maxTime) {		
 		sendRandomMessage(rnd.nextInt(N), 0);
 		
-		save();
-		//debug.startLoopTimer();
+		saveHeader(s);
+		save(s);
 		for(int i=0; i<maxTime; i++) {
-			oneStep(i+1);
-			//if((i+1)%1000 == 0) debug.progressSimple(repetition-1, 0, maxRepetitions, i, 0, maxTime);
+			oneStep(s, i+1);
 		}
 	}
 	
-	//public void run(int maxTime, int repetition, int maxRepetitions) {run(maxTime, 0.0, repetition, maxRepetitions);}
-	
-	//public void run(int repetition, int maxRepetitions) {run(5000, 0.0, repetition, maxRepetitions);}
-	
-	public void saveHeader() {
+	public void saveHeader(Save s) {
 		// Commented lines are not necessary right now
 		//int nEdit = 30;
 		
@@ -512,7 +501,7 @@ public class Dynamics
 		//s.writeDataln("edit" + nEdit);
 	}
 	
-	public void saveParameters(String order, int realisations, int maxTime) {
+	public void saveParameters(Save s, String dynType, int realisations, int maxTime) {
 		s.writeDatatb("N");
 		s.writeDatatb(N);
 		s.writeDataln("Number of nodes in the newtork");
@@ -530,24 +519,24 @@ public class Dynamics
 		s.writeDataln("Length of the opinion vector");
 		
 		s.writeDatatb("eta");
-		s.writeDatatb(pNewMessage);
-		s.writeDataln("Probability of sending new message");
+		s.writeDatatb(pEdit);
+		s.writeDataln("Probability of creating new message");
 		
 		s.writeDatatb("tau");
-		s.writeDatatb(pEdit);
+		s.writeDatatb(Tools.convertToDouble(cosineThreshold));
 		s.writeDataln("Probability of edit an information");
 		
 		s.writeDatatb("alpha");
 		s.writeDatatb(pNewMessage);
-		s.writeDataln("Probability of creating new message");
+		s.writeDataln("Probability of sending new message");
 		
-		s.writeDatatb("order");
-		s.writeDatatb(order);
-		s.writeDataln("Order of information: by time or by similarity");
+		s.writeDatatb("dynamics type");
+		s.writeDatatb(dynType);
+		s.writeDataln("Type of the dynamics, with or without competition");
 		
-		s.writeDatatb("energy");
-		s.writeDatatb(calculateWholeEnergy(network));
-		s.writeDataln("Energy of connections in the network");
+		s.writeDatatb("closest similarity");
+		s.writeDatatb(getNeighoursAverageSimilarity());
+		s.writeDataln("Avereage cosine similarity between the closest neighbors in the network");
 		
 		s.writeDatatb("realizations");
 		s.writeDatatb(realisations);
@@ -560,11 +549,9 @@ public class Dynamics
 		s.writeDataln("");
 	}
 	
-	public void closeSaveFile() {s.closeWriter();}
-	
-	private void save() {
+	private void save(Save s) {
 		//s.writeDatatb(repetition);
-		s.writeDataln(getLastMessage().getId().get(0));
+		s.writeDataln(getLastMessage().getId());
 		//s.writeDatatb(getLastMessage().getTime());
 		//s.writeDatatb(type);
 		//s.writeDatatb(getThreshold());
@@ -617,6 +604,7 @@ public class Dynamics
 	
 	// ~ SET ~	
 	
+	// Sets probability of change, add or delete one bit of information
 	public void setProbabilities(double pChg, double pAdd, double pDel) {
 		pChangeOneBit = pChg;
 		pAddOneBit = pAdd;
@@ -649,12 +637,13 @@ public class Dynamics
 		N = network.getNumberOfNodes();
 		
 		messages.clear();
-		editID = 0;
+		//editID = 0;
 		nMsg = 0;
+		setInitialOpinions();
 	}
 	
+	// Sets probability of creating new message
 	public void setProbabilityNewMessage(double pNewMessage) {this.pNewMessage = pNewMessage;}
-	public void setSaveFile(String path) {s = new Save(path);}
 	
 	// Add message to the every neighbor dashboard
 	public void setDashboard(int i, Message msg) {
@@ -664,7 +653,6 @@ public class Dynamics
 		
 		for(int j=0; j<getNodeDegree(i); j++) {
 			connectionIndex = getNode(i).getConnection(j)[0] != i ? 0 : 1;
-			//System.out.println(i + "\t" + getNode(i).getConnection(j)[connectionIndex] + "\t" + getNode(i).getConnection(j)[connectionIndex]);
 			setSharedMessage(getNode(i).getConnection(j)[connectionIndex], msg);
 		}
 	}
@@ -695,6 +683,24 @@ public class Dynamics
 		}
 
 		return messages;
+	}
+	
+	// Get average similarity between the closest neighbors in the network
+	private double getNeighoursAverageSimilarity() {
+		double sum = 0;
+		double counts = 0;
+		
+		for(int i=0; i<N; i++) {
+			network.computeDistance(i);
+			
+			for(int j=0; j<N; j++)
+				if(network.getNode(j).getDistance() == 1) {
+					sum += agentsSimilarity(network.getNode(j).getNodeOpinion(), network.getNode(i).getNodeOpinion());
+					counts += 1;
+				}
+		}
+		
+		return(sum/counts);
 	}
 	
 	public ArrayList<Message> getAllMessages() {return messages;}

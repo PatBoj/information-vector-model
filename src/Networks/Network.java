@@ -1,6 +1,7 @@
 package Networks;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
@@ -163,6 +164,32 @@ public class Network {
 			}
 		}
 	}
+	
+	// Computes distance between given node and the resto of the network
+	public void computeDistance(int index) {
+		resetDistances();
+		getNode(index).setDistance(0);
+		
+		LinkedList<Integer> queue = new LinkedList<Integer>();
+		queue.add(index);
+		
+		int tempIndex = -1;
+		int neighborIndex = -1;
+		
+		while(queue.peek() != null) {
+			tempIndex = queue.poll();
+			
+			for(int i=0; i<getNodeDegree(tempIndex); i++) {
+				neighborIndex = getNeighbourIndex(tempIndex, i);
+				
+				if(getNode(neighborIndex).getDistance() == -1)
+					queue.add(neighborIndex);
+				
+				if(getNode(neighborIndex).getDistance() == -1 | getNode(neighborIndex).getDistance() > getNode(tempIndex).getDistance() + 1)
+					getNode(neighborIndex).setDistance(getNode(tempIndex).getDistance() + 1);
+			}
+		}
+	}
 
 	// Creates adjacency matrix
 	protected void createAdjacencyMatrix() {
@@ -220,6 +247,11 @@ public class Network {
 		adjMat.closeWriter();
 	}
 	
+	public void resetDistances() {
+		for(int i=0; i<N; i++)
+			nodes.get(i).setDistance(-1);
+	}
+	
 	// Saves agency matrix in default directory
 	public void saveAdjacencyMatrix() {saveAdjacencyMatrix("adjacency_matrix.txt");}
 
@@ -240,4 +272,20 @@ public class Network {
 	}
 	public int getNumberOfComponents() {return getComponents().size();}
 	public String getTopologyType() {return typeOfTopology;}
+	
+	public int getNeighbourIndex(int nodeIndex, int connectionIndex) {
+		if(getNode(nodeIndex).getConnection(connectionIndex)[0] != nodeIndex)
+			return getNode(nodeIndex).getConnection(connectionIndex)[0];
+		else
+			return getNode(nodeIndex).getConnection(connectionIndex)[1];
+	}
+	
+	public int[] getNeighbourIndex(int nodeIndex) {
+		int[] neighbourIndexes = new int[getNode(nodeIndex).getNodeDegree()];
+		
+		for(int i=0; i<neighbourIndexes.length; i++)
+			neighbourIndexes[i] = getNeighbourIndex(nodeIndex, i);
+		
+		return neighbourIndexes;
+	}
 }

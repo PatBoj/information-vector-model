@@ -1,8 +1,11 @@
-
-test/raw_data.txt
-results/08_02_2021/all_th_BA.txt
-results/08_02_2021/all_th_ER.txt
-results/08_02_2021/none_th_ER.txt
-results/08_02_2021/none_th_BA.txt
-results/08_02_2021/none_th_SQ.txt
-results/08_02_2021/all_th_SQ.txt
+.classpath
+results/.Rhistory
+/bin/
+results/20_04_2021/
+results/20_04_2021_other/
+results/20_04_2021_other_hist/
+results/ising_test/
+results/processed_files/
+results/single files/
+results/tests/
+results/test_hist/

@@ -1,0 +1,31 @@
+N	1000	Number of nodes in the newtork
+<k>	5.988	Average degree
+network type	BA	Topology type of the network
+D	100	Length of the opinion vector
+eta	0.0	Probability of creating new message
+tau	0.4	Probability of edit an information
+alpha	0.1	Probability of sending new message
+order	time	Order of information: by time or by similarity
+energy	-206	Energy of connections in the network
+realizations	20	Number of independet realisations
+time steps	1000	Number of time steps
+
+0.005	1.46170425955774
+0.305	0.447494288664984
+0.475	-0.266573755685293
+0.605	-0.299663742677235
+0.695	-0.690693738341213
+0.775	-0.992542487957573
+0.845	-1.23863374701325
+0.905	-1.59966374267723
+0.995	-1.38863374701325
+1.045	-1.73966374267723
+1.075	-1.46863374701326
+1.145	-1.83966374267723
+1.175	-1.86966374267723
+1.235	-1.92966374267723
+1.255	-1.94966374267724
+1.435	-2.12966374267724
+1.595	-2.28966374267723
+1.715	-2.40966374267723
+1.815	-2.50966374267723

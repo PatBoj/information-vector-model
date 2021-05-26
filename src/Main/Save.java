@@ -15,9 +15,8 @@ public class Save
 	public Save(String path)
 	{
 		this.path = path;
-		aFile = new File(path); 
-		try {writer = new FileWriter(aFile);} 
-		catch (IOException e) {e.printStackTrace();}
+		createTree(path);
+		createFile(path);
 	}
 	
 	// Default constructor
@@ -27,9 +26,27 @@ public class Save
 	// Creates file
 	public void createFile(String path)
 	{
+		createTree(path);
 		aFile = new File(path); 
 		try {writer = new FileWriter(aFile);} 
 		catch (IOException e) {e.printStackTrace();}
+	}
+	
+	public static void createTree(String path) {
+		String dir = "";
+		String[] dirs = path.split("/");
+		
+		for(int i=0; i<dirs.length-1; i++) {
+			dir += dirs[i];
+			createDirectory(dir);
+			dir += "/";
+		}
+	}
+	
+	// Creates single directory
+	private static void createDirectory(String dir) {
+		File theDir = new File(dir);
+		if(!theDir.exists()) theDir.mkdirs();
 	}
 	
 	// Writes integer to file
@@ -82,7 +99,7 @@ public class Save
 		catch (IOException e) {e.printStackTrace();}
 	}
 	
-	// Writes table of integers
+	// Writes table of doubles
 	private void writeData(double[] data, String separator, String eol) {
 		try {
 			if (!aFile.exists()) aFile.createNewFile(); // checking if file exists
