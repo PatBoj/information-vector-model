@@ -7,6 +7,7 @@ import java.util.Random;
 import Main.Save;
 import Networks.Network;
 import Networks.Node;
+import ProgramingTools.Time;
 import ProgramingTools.Tools;
 
 public class Dynamics 
@@ -50,6 +51,15 @@ public class Dynamics
 	
 	// List of all messages
 	private ArrayList<Message> messages;
+	
+	// Array to agregata data
+	// [0] - id counter
+	// [1] - average length
+	// [2] - average emotion
+	private double[][] dataToSave;
+	
+	// Max index to save
+	private int maxIndexSave;
 	
 	// Unique id of edits
 	//private int editID;
@@ -287,11 +297,18 @@ public class Dynamics
 		}
 	}
 	
+	// Checks if message is the same as node opinion
+	private boolean isIdentical(int[] nodeOpinion, int[][] content) {	
+		for(int i=0; i<content[0].length; i++)
+			if(nodeOpinion[content[1][i]] != content[0][i])
+				return false;
+		return true;
+	}
+	
 	// ~ ACTUAL DYNAMICS ~
 	
 	// Sends message in to the network
 	public void sendRandomMessage(int sourceNode, int time) {
-		nMsg++;
 		int mLength = rnd.nextInt((int)Tools.convertToDouble(.14*D, 0)) + 1;
 		
 		ArrayList<Integer> indexes = new ArrayList<Integer>(D);
@@ -312,6 +329,7 @@ public class Dynamics
 		messages.add(new Message(new int[][] {message.clone(), Tools.convertFromArrayList(indexes, mLength)}, time, nMsg));
 		setMessage(sourceNode, getLastMessage());
 		setDashboard(sourceNode, getLastMessage());
+		nMsg++;
 	}
 	
 	/*private boolean alreadyShared(ArrayList<Message> sendByNode, Message neighborMessage) {
@@ -380,7 +398,7 @@ public class Dynamics
 	}
 	
 	// Changes one bit of information in message
-	private int[][] changeOneBit(int[] nodeOpinion, int[][] content) {
+	private int[][] changeOneBit(int[] nodeOpinion, int[][] content, double sim) {
 		int[][] newContent = new int[2][content[0].length];
 		int randomVariable = -1;
 		boolean changed = false;
@@ -403,17 +421,18 @@ public class Dynamics
 	}
 	
 	// One time step
-	private void oneStep(Save s, int time) {
+	private void oneStep(int time) {
 		int node = rnd.nextInt(N); // pick random node from the network
 		boolean alreadyShared; // true if message with this ID was shared by agent
 		double cosineSimilarity; // cosine similarity between message and node opinion
+		boolean isIdentical; // true if the message is the same as agents's opinion
 		int[][] newContent; // new message content
 		// String edit = ""; // show change in the message
 		
 		// Sends new message to the network
 		if(rnd.nextDouble() < pNewMessage) {
 			sendRandomMessage(rnd.nextInt(N), time);
-			save(s);
+			saveDataToArray();
 		} else { // Share message
 			// Checks if the last neighbor message is similar to the node's opinion vector
 			// this loop is for all messages shared by node's neighbors
@@ -426,25 +445,26 @@ public class Dynamics
 					if(!alreadyShared) {
 						// Message can be edit before sharing
 						// but if it's matching the node's opinion it shouldn't be changed
-						if(cosineSimilarity != 1 && rnd.nextDouble() < pEdit) {
+						if(rnd.nextDouble() < pEdit) {
 							double randomChance = rnd.nextDouble();
+							isIdentical = isIdentical(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes());
 							//editID++;
 							
 							// Delete information
 							// if of curse length of the message is greater than 1
-							if(randomChance < pDeleteOneBit && getDashboard(node).get(i).getMessageContentAndIndexes()[0].length > 1) {
+							if(!isIdentical && randomChance < pDeleteOneBit && getDashboard(node).get(i).getMessageContentAndIndexes()[0].length > 1) {
 								newContent = deleteOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
 								//edit = "del" + editID;
 							}
+							// Change information
+							else if (!isIdentical && randomChance < pDeleteOneBit + pChangeOneBit) {
+								newContent = changeOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes(), cosineSimilarity).clone();
+								//edit = "chg" + editID;
+							}
 							// Add new information
-							else if(randomChance < pDeleteOneBit + pAddOneBit) {
+							else if(randomChance <= pDeleteOneBit + pDeleteOneBit + pChangeOneBit) {
 								newContent = addOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
 								//edit = "add" + editID;
-							}
-							// Change information
-							else if (randomChance <= pDeleteOneBit + pAddOneBit + pChangeOneBit) {
-								newContent = changeOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
-								//edit = "chg" + editID;
 							}
 							// Else throw an error
 							else 
@@ -457,8 +477,7 @@ public class Dynamics
 						
 						setMessage(node, getLastMessage());
 						setDashboard(node, getLastMessage());
-						
-						save(s);
+						saveDataToArray();
 						break; // COMMENT IT IF YOU WANT TO EXCLUDE COMPETITION
 					}
 					else getDashboard(node).remove(i);
@@ -470,13 +489,18 @@ public class Dynamics
 	}
 	
 	// Runs entire simulation
-	public void run(Save s, int maxTime) {		
-		sendRandomMessage(rnd.nextInt(N), 0);
+	public void run(int maxTime) {
+		dataToSave = new double[3][maxTime];
+		for(int i=0; i<3; i++)
+			for(int j=0; j<maxTime; j++)
+				dataToSave[i][j] = 0;
+		maxIndexSave = 0;
 		
-		saveHeader(s);
-		save(s);
+		sendRandomMessage(rnd.nextInt(N), 0);
+		saveDataToArray();
+		
 		for(int i=0; i<maxTime; i++) {
-			oneStep(s, i+1);
+			oneStep(i+1);
 		}
 	}
 	
@@ -485,8 +509,9 @@ public class Dynamics
 		//int nEdit = 30;
 		
 		//s.writeDatatb("repetition");
-		s.writeDatatb("id");
-		s.writeDataln("length");
+		s.writeDatatb("count");
+		s.writeDatatb("avg_length");
+		s.writeDataln("avg_emotion");
 		//s.writeDatatb("time");
 		//s.writeDatatb("type");
 		//s.writeDatatb("threshold");
@@ -549,7 +574,8 @@ public class Dynamics
 	private void save(Save s) {
 		//s.writeDatatb(repetition);
 		s.writeDatatb(getLastMessage().getId());
-		s.writeDataln(getLastMessage().getMessageContent().length);
+		s.writeDatatb(getLastMessage().getMessageContent().length);
+		s.writeDataln(Tools.getAverage(getLastMessage().getMessageContent()));
 		//s.writeDatatb(getLastMessage().getTime());
 		//s.writeDatatb(type);
 		//s.writeDatatb(getThreshold());
@@ -600,8 +626,28 @@ public class Dynamics
 		}*/
 	}
 	
-	// ~ SET ~	
+	// Aggregates data to save
+	private void saveDataToArray() {
+		int msgID = getLastMessage().getId();
+		if(msgID > maxIndexSave) maxIndexSave = msgID;
+		
+		dataToSave[0][msgID]++;
+		dataToSave[1][msgID] += getLastMessage().getMessageContent().length;
+		dataToSave[2][msgID] += Tools.getAverage(getLastMessage().getMessageContent());
+	}
 	
+	// Saves aggregated data to file
+	public void saveData(Save s) {
+		saveHeader(s);
+		for(int i=0; i<=maxIndexSave; i++) {
+			s.writeDatatb(Tools.convertToString(dataToSave[0][i], 0));
+			s.writeDatatb(dataToSave[1][i] / dataToSave[0][i]);
+			s.writeDataln(dataToSave[2][i] / dataToSave[0][i]);
+		}
+	}
+	
+	// ~ SET ~
+
 	// Sets probability of change, add or delete one bit of information
 	public void setProbabilities(double pChg, double pAdd, double pDel) {
 		pChangeOneBit = pChg;

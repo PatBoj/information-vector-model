@@ -57,7 +57,8 @@ public class Experiments implements Runnable {
 		dyn.setInitialOpinions(initialTime);
 		dyn.saveParameters(s, "with_competition", realisations, timeSteps);
 		
-		dyn.run(s, timeSteps);
+		dyn.run(timeSteps);
+		dyn.saveData(s);
 		s.closeWriter();
 		
 		Time.count();
@@ -65,8 +66,8 @@ public class Experiments implements Runnable {
 	}
 	
 	public static void runExperiment() throws InterruptedException {
-		int N = 5;
-		double dt = 0.01;
+		int N = 2;
+		double dt = 0.5;
 		int n = (int)(2/dt+1);
 		
 		double[] tau = new double[n];
@@ -75,35 +76,32 @@ public class Experiments implements Runnable {
 		
 		int[][] times = new int[][] {{0, 60000, 225000, 555000}, {0, 20000, 45000, 95000}};
 		
-		Time.setMaxIterations(1 * n * N);
+		Time.setMaxIterations(4 * times[0].length * n * N);
 		
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		
-		for(int k=1; k<2; k++) {
-		/*for(int i=0; i<n; i++) {
-			for(int j=0 ; j<N; j++)
-				executor.execute(new Experiments(j+1, tau[i], "ER", 0, N, 0));
-		}*/
+		for(int k=0; k<4; k++) {
+			for(int i=0; i<n; i++)
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0, N, times[0][k]));
 		
-		for(int i=0; i<n; i++) {
-			for(int j=0 ; j<N; j++)
-				executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, N, times[0][k]));
-		}
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, N, times[0][k]));
 		
-		/*(int i=0; i<n; i++) {
-			for(int j=0 ; j<N; j++)
-				executor.execute(new Experiments(j+1, tau[i], "BA", 0, N, 0));
-		}
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0, N, times[1][k]));
 		
-		for(int i=0; i<n; i++) {
-			for(int j=0 ; j<N; j++)
-				executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, 0));
-		}*/
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, times[1][k]));
 		}
 		
 		executor.shutdown();
 		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 		
 		Mailer.send();
+		//Time.speek();
 	}
 }

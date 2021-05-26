@@ -98,9 +98,9 @@ public class Time {
 	
 	// Prints the result of the chunk of code comparison
 	public void printTimeComparison() {
-		System.out.println("Name\tTime\tRealisations\tPer iteration /ms");
+		System.out.printf("%-20s %-9s %-13s %-14s%n", "Name", "Time", "Realizations", "Per iteration /ns");
 		for(int i=0; i<codeNames.length; i++)
-			System.out.println(codeNames[i] + "\t" + Tools.convertTime(codeTimes[i]) + "\t" + codeRuns[i] + (codeTimes[i]/codeRuns[i]));
+			System.out.printf("%-20s %-9s %-13d %-14.2f%n", codeNames[i],  Tools.convertTime(codeTimes[i]), codeRuns[i], ((double)codeTimes[i]/codeRuns[i]*1000));
 		System.out.println("");
 	}
 	
