@@ -165,6 +165,7 @@ public class Network {
 		}
 	}
 	
+	// Computes distance between given node and the resto of the network
 	public void computeDistance(int index) {
 		resetDistances();
 		getNode(index).setDistance(0);
@@ -179,11 +180,7 @@ public class Network {
 			tempIndex = queue.poll();
 			
 			for(int i=0; i<getNodeDegree(tempIndex); i++) {
-				
-				if(getNode(tempIndex).getConnection(i)[0] != tempIndex)
-					neighborIndex = getNode(tempIndex).getConnection(i)[0];
-				else
-					neighborIndex = getNode(tempIndex).getConnection(i)[1];
+				neighborIndex = getNeighbourIndex(tempIndex, i);
 				
 				if(getNode(neighborIndex).getDistance() == -1)
 					queue.add(neighborIndex);
@@ -275,4 +272,20 @@ public class Network {
 	}
 	public int getNumberOfComponents() {return getComponents().size();}
 	public String getTopologyType() {return typeOfTopology;}
+	
+	public int getNeighbourIndex(int nodeIndex, int connectionIndex) {
+		if(getNode(nodeIndex).getConnection(connectionIndex)[0] != nodeIndex)
+			return getNode(nodeIndex).getConnection(connectionIndex)[0];
+		else
+			return getNode(nodeIndex).getConnection(connectionIndex)[1];
+	}
+	
+	public int[] getNeighbourIndex(int nodeIndex) {
+		int[] neighbourIndexes = new int[getNode(nodeIndex).getNodeDegree()];
+		
+		for(int i=0; i<neighbourIndexes.length; i++)
+			neighbourIndexes[i] = getNeighbourIndex(nodeIndex, i);
+		
+		return neighbourIndexes;
+	}
 }

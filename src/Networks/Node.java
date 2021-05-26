@@ -16,8 +16,7 @@ public class Node
 	// Value dosen't mean anything, it's only label of component
 	private int component; 
 	
-	// Temporary number that helps to count the distance between
-	// nodes
+	// Temporary number that helps to count the distance between nodes
 	private int distance;
 	
 	/***** DYNAMICS *****/
@@ -30,12 +29,12 @@ public class Node
 	private ArrayList<Message> messages;
 	
 	// Messages that will appear on this node's dashboard
-	private ArrayList<Message> sharedMessages;
+	private ArrayList<Message> dashboard;
 	
 	// Cosine threshold
 	private double cosineThreshold;
 	
-	// ID's of shared nodes
+	// ID's of shared messages
 	private ArrayList<Integer> ids;
 	
 	// ~ CONSTRUCTORS ~ 
@@ -50,7 +49,7 @@ public class Node
 		ids = new ArrayList<Integer>();
 		links = new ArrayList<Link>();
 		messages = new ArrayList<Message>();
-		sharedMessages = new ArrayList<Message>();
+		dashboard = new ArrayList<Message>();
 		component = -1;
 		distance = -1;
 		cosineThreshold = -2;
@@ -67,9 +66,9 @@ public class Node
 		messages = new ArrayList<Message>();
 		for(Message msg : node.messages)
 			messages.add(new Message(msg));
-		sharedMessages = new ArrayList<Message>();
-		for(Message msg : node.sharedMessages)
-			sharedMessages.add(new Message(msg));
+		dashboard = new ArrayList<Message>();
+		for(Message msg : node.dashboard)
+			dashboard.add(new Message(msg));
 		this.cosineThreshold = node.cosineThreshold;
 		ids = new ArrayList<Integer>();
 		for(int id : node.ids)
@@ -148,6 +147,10 @@ public class Node
 	/***** DYNAMICS *****/
 	/********************/
 	
+	// ~ METHODS ~
+	public void clearDashboard() {dashboard.clear();}
+	public void deleteFromDashboard(int index) {dashboard.remove(index);}
+	
 	// ~ SET ~
 	public void setNodeOpinion(int[] nodeOpinion) {this.nodeOpinion = nodeOpinion.clone();}
 	public void setOneNodeOpinion(int index, int value) {
@@ -155,14 +158,14 @@ public class Node
 			throw new Error("Opinion element must be -1, 0 or 1.");
 		nodeOpinion[index] = value;
 	}
-	public void setMessage(Message msg) {messages.add(msg); ids.add(msg.getId().get(0));}
-	public void setSharedMessage(Message msg) {sharedMessages.add(msg);}
+	public void setMessage(Message msg) {messages.add(msg); ids.add(msg.getId());}
+	public void setSharedMessage(Message msg) {dashboard.add(msg);}
 	public void setThreshold(double cosineThreshold) {this.cosineThreshold = cosineThreshold;}
 		
 	// ~ GETTERS ~
 	public int[] getNodeOpinion() {return nodeOpinion;}
 	public ArrayList<Message> getAllNodeMessages() {return messages;}
-	public ArrayList<Message> getNodeDashboard() {return sharedMessages;}
+	public ArrayList<Message> getNodeDashboard() {return dashboard;}
 	public ArrayList<Integer> getSharedIds() {return ids;}
 	public double getCosineThreshold() {return cosineThreshold;}
 }

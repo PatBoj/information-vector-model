@@ -17,11 +17,11 @@ import Networks.LatticeNetwork;
 import Networks.Network;
 import Networks.RandomGraph;
 import Networks.ScaleFreeNetwork;
-import ProgramingTools.Debug;
+import ProgramingTools.Tools;
 
 public class Test 
 {
-	private Debug d;
+	private Tools d;
 	
 	int N;
 	int k;
@@ -31,9 +31,7 @@ public class Test
 	double pNewMessage;
 	int realisations;
 	
-	public Test() {
-		d = new Debug();
-		
+	public Test() {		
 		N = 1000;
 		k = 6;
 		timeSteps = 300000;
@@ -54,12 +52,10 @@ public class Test
 			dyn.saveParameters("time", realisations, timeSteps);
 			dyn.saveHeader();
 			
-			d.startLoopTimer();
 			net = new RandomGraph(N, (double)k/(N-1));
 			dyn.setNewNetwork(net);
 			dyn.setInitialConditions(0.2);
 			dyn.run(timeSteps);
-			d.progress(i, 0, realisations);
 			dyn.closeSaveFile();
 		}
 	}
@@ -75,12 +71,10 @@ public class Test
 			dyn.saveParameters("time", realisations, timeSteps);
 			dyn.saveHeader();
 			
-			d.startLoopTimer();
 			net = new RandomGraph(N, (double)k/(N-1));
 			dyn.setNewNetwork(net);
 			dyn.setInitialConditions(0.2);
 			dyn.run(timeSteps);
-			d.progress(i, 0, realisations);
 			dyn.closeSaveFile();
 		}
 	}
@@ -125,13 +119,11 @@ public class Test
 		dyn.setSaveFile("test/raw_data.txt");
 		dyn.saveHeader();
 		
-		d.startLoopTimer();
 		for(int i=0; i<avg; i++) {
 			net = new ScaleFreeNetwork(N, k/2);
 			dyn.setNewNetwork(net);
 			dyn.setInitialConditions(net, 0.2);
 			dyn.run(n);
-			d.progress(i, 0, avg);
 		}
 		dyn.closeSaveFile();
 	}
@@ -177,12 +169,10 @@ public class Test
 		
 		for(int j=0; j<th.length; j++) {
 			for(int i=0; i<avg; i++) {
-				d.startLoopTimer();
 				net = new ScaleFreeNetwork(N, k/2);
 				dyn.setNewNetwork(net);
 				dyn.setInitialConditions(net, th[j]);
 				dyn.run(n);
-				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
@@ -194,17 +184,13 @@ public class Test
 		
 		for(int j=0; j<th.length; j++) {
 			for(int i=0; i<avg; i++) {
-				d.startLoopTimer();
 				net2 = new ScaleFreeNetwork(N, k/2);
 				dyn2.setNewNetwork(net2);
 				dyn2.setInitialConditions(net2, th[j]);
 				dyn2.run(n);
-				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
-		
-		d.endTime();
 	}
 	
 	public void popularityER() {
@@ -225,12 +211,10 @@ public class Test
 		
 		for(int j=0; j<th.length; j++) {
 			for(int i=0; i<avg; i++) {
-				d.startLoopTimer();
 				net = new RandomGraph(N, k);
 				dyn.setNewNetwork(net);
 				dyn.setInitialConditions(net, th[j]);
 				dyn.run(n);
-				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
@@ -242,17 +226,13 @@ public class Test
 		
 		for(int j=0; j<th.length; j++) {
 			for(int i=0; i<avg; i++) {
-				d.startLoopTimer();
 				net2 = new RandomGraph(N, k);
 				dyn2.setNewNetwork(net2);
 				dyn2.setInitialConditions(net2, th[j]);
 				dyn2.run(n);
-				d.progress(j, 0, th.length, i, 0, avg);
 			}
 		}
 		dyn.closeSaveFile();
-		
-		d.endTime();
 	}
 	
 	public void testCorrelation() {
@@ -339,9 +319,9 @@ public class Test
 		}
 		distances.removeIf(distance -> distance.equals(-1));
 		distances.removeIf(distance -> distance.equals(0));
-		System.out.println("Average: " + d.getAverageFromInteger(distances) + "\n");
+		System.out.println("Average: " + d.getAverageInteger(distances) + "\n");
 			
-		d.simpleHistogram(distances, 100);
+		d.displaySimpleHistogram(distances);
 		
 		/*
 		for(int i=0; i<N; i++) {
@@ -420,8 +400,7 @@ public class Test
 	}
 	
 	public void testHistogram() {
-		Debug d = new Debug(0);
-		d.simpleHistogram(new int[] {5, 5, 6, 7, 8, 9, 9, 9, 10}, 100);
+		Tools.displaySimpleHistogram(new int[] {5, 5, 6, 7, 8, 9, 9, 9, 10});
 	}
 	/*
 	public void testClosestSimilarity() {
@@ -453,5 +432,30 @@ public class Test
 		s2.closeWriter();
 	}*/
 	
-	
+	/*
+	 private double[] compressedSensing() {
+		double[] X = new double[N-1];
+		int counter = 0;
+			
+		BufferedReader reader = null;
+	    Process shell = null;
+	    try {
+	    	shell = Runtime.getRuntime().exec(
+	    			new String[] { "C:\\Program Files\\R\\R-3.6.0\\bin\\x64\\Rscript.exe", 
+	    				"D:\\Studia\\Programowanie\\Thesis\\R\\compute_matrix.R"});
+
+	    	reader = new BufferedReader(new InputStreamReader(shell.getInputStream()));
+	    	String line;
+	    	while ((line = reader.readLine()) != null) {
+	    		if(counter < N-1) X[counter] = Double.parseDouble(line);
+	    		else {break;}
+	    		counter++;
+	    	}
+	    	
+	    }
+	    catch (IOException e) {e.printStackTrace();}
+			
+	    return X;
+	}
+	 */
 }

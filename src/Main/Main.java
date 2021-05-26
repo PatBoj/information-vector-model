@@ -1,15 +1,28 @@
 package Main;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.util.ArrayList;
 
-import ProgramingTools.Debug;
+import Dynamics.Dynamics;
+import Networks.Network;
+import Networks.RandomGraph;
+import Networks.ScaleFreeNetwork;
+import ProgramingTools.Time;
+import ProgramingTools.Tools;
 
 public class Main {
 	public static void main(String args[]) throws InterruptedException {
+		// Experiments.runExperiment();
 		
-		Test t = new Test();
+		Process child;
+		try {
+			child = Runtime.getRuntime().exec("Rscript results/agregate.R");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		/* Test t = new Test();
 		
 		int n = 20;
 		double[] tau = new double[201];
@@ -37,7 +50,7 @@ public class Main {
 			for(int j=0 ; j<n; j++)
 				executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, n));
 		}
-
+		*/
 		/*
 		for(int i=0; i<tau.length; i++) {
 			for(int j=0 ; j<n; j++)

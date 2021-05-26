@@ -3,7 +3,7 @@ library(shiny)
 library(dplyr)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-n <- 20
+n <- 20 # number of independent realizations
 
 er <- read.table("ising_test/average_ER.txt", sep="\t", col.names=c("time", "avg"))
 ba <- read.table("ising_test/average_BA.txt", sep="\t", col.names=c("time", "avg"))
@@ -39,3 +39,5 @@ averageSimilarity <- function(data) {
     ylab("cosine similarity between agents") 
   plot
 }
+
+averageSimilarity(data)
