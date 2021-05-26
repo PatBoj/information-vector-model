@@ -2,11 +2,7 @@ package Dynamics;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Random;
-import java.util.Set;
-
-import javax.naming.ldap.Rdn;
 
 import Main.Save;
 import Networks.Network;
