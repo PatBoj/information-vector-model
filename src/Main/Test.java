@@ -21,8 +21,6 @@ import ProgramingTools.Tools;
 
 public class Test 
 {
-	private Tools d;
-	
 	int N;
 	int k;
 	int timeSteps;
@@ -117,9 +115,7 @@ public class Test
 		}
 		distances.removeIf(distance -> distance.equals(-1));
 		distances.removeIf(distance -> distance.equals(0));
-		System.out.println("Average: " + d.getAverageInteger(distances) + "\n");
-			
-		d.displaySimpleHistogram(distances);
+		System.out.println("Average: " + Tools.getAverageInteger(distances) + "\n");
 		
 		/*
 		for(int i=0; i<N; i++) {

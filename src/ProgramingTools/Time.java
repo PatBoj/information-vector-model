@@ -37,6 +37,12 @@ public class Time {
 	// Just a sorted listed of times
 	private ArrayList<Long> sortedTimes;
 	
+	// Counter for multithreads
+	private static int globalCounter;
+	
+	// Max iterations
+	private static int maxIterations;
+	
 	// ~ CONSTRUCTORS ~
 	// Constructor #1
 	public Time(String[] names) {
@@ -167,7 +173,7 @@ public class Time {
 	}
 	
 	// Prints simple progress bar like this [###     ]
-	private void printProgressBar(double progress) {
+	private static void printProgressBar(double progress) {
 		int n = 50;
 		String[] bar = new String[n];
 		int done = (int)Tools.convertToDouble(progress/2 * 100, 0);
@@ -182,12 +188,12 @@ public class Time {
 		for(int i=0; i<19; i++)
 			System.out.print(bar[i]);
 		
-		if(Tools.convertToDouble(progress) < 0.1)
-			System.out.print(bar[19] + "| " + Tools.convertToString(progress*100, 2) + "%" + " |" + bar[29]);
-		else if(Tools.convertToDouble(progress)  < 1)
-			System.out.print(bar[19] + "| " + Tools.convertToString(progress*100, 2) + "%" + " |");
-		else if(Tools.convertToDouble(progress)  == 1)
-			System.out.print("| " + Tools.convertToString(progress*100, 2) + "%" + " |");
+		if(Tools.convertToDouble(progress*100) < 10)
+			System.out.print(bar[19] + "| " + Tools.convertToString(progress*100) + "%" + " |" + bar[29]);
+		else if(Tools.convertToDouble(progress*100)  < 100)
+			System.out.print(bar[19] + "| " + Tools.convertToString(progress*100) + "%" + " |");
+		else if(Tools.convertToDouble(progress*100)  == 100)
+			System.out.print("| " + Tools.convertToString(progress*100) + "%" + " |");
 		
 		for(int i=30; i<n; i++)
 			System.out.print(bar[i]);
@@ -232,4 +238,20 @@ public class Time {
 		speek("tada.wav");
 		speek("Voice1.wav");
 	}
+	
+	public static double computeProgress(int i, int iMin, int iMax) {
+		return (double)(i-iMin+1)/(iMax-iMin); 
+	}
+	
+	public static double computeProgress(int i, int iMin, int iMax, int j, int jMin, int jMax) {
+		return (double)((i-iMin)*(jMax-jMin)+(j-jMin+1))/((iMax-iMin)*(jMax-jMin));
+	}
+	
+	// Counter methods
+	public static void resetCounter() {globalCounter = 0;}
+	public static void count() {globalCounter += 1;}
+	public static void setMaxIterations(int iterations) {maxIterations = iterations;}
+	public static void globalProgress(String str) {System.out.print(str + " "); globalProgress();}
+	public static void globalProgress() {printProgressBar((double)globalCounter/maxIterations);}
+	public static int getGlobalCounter() {return globalCounter;}
 }

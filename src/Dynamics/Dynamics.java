@@ -489,7 +489,8 @@ public class Dynamics
 		//int nEdit = 30;
 		
 		//s.writeDatatb("repetition");
-		s.writeDataln("message_id");
+		s.writeDatatb("id");
+		s.writeDataln("length");
 		//s.writeDatatb("time");
 		//s.writeDatatb("type");
 		//s.writeDatatb("threshold");
@@ -551,7 +552,8 @@ public class Dynamics
 	
 	private void save(Save s) {
 		//s.writeDatatb(repetition);
-		s.writeDataln(getLastMessage().getId());
+		s.writeDatatb(getLastMessage().getId());
+		s.writeDataln(getLastMessage().getMessageContent().length);
 		//s.writeDatatb(getLastMessage().getTime());
 		//s.writeDatatb(type);
 		//s.writeDatatb(getThreshold());

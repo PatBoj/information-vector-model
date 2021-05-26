@@ -12,15 +12,7 @@ import ProgramingTools.Tools;
 
 public class Main {
 	public static void main(String args[]) throws InterruptedException {
-		// Experiments.runExperiment();
-		
-		Process child;
-		try {
-			child = Runtime.getRuntime().exec("Rscript results/agregate.R");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Experiments.runExperiment();
 		
 		/* Test t = new Test();
 		
