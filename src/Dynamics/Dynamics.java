@@ -124,6 +124,40 @@ public class Dynamics
 			//	computeTheClosestSimilarity(j+1, s);
 		}
 	}
+	
+	// Sets initial opinions based on Ising model
+		public void setInitialOpinions(Network net, double sim) {
+			setInitialOpinions(net);
+			
+			double beta = 2; // exponent
+			int i = -1; // random node
+			int changeIndex = -1; // random index of opinion vector
+			int newOpinion = -2; // new opinion in given index
+			int e = calculateWholeEnergy(net); // whole energy of the system
+			int de = 0; // energy change
+			double currentSimilarity = 0;
+			int j = 0;
+			
+			while((currentSimilarity < sim - 0.1 || currentSimilarity > sim + 0.1) & currentSimilarity <= 0.8) {
+				i = rnd.nextInt(N);
+				changeIndex = rnd.nextInt(D);
+				newOpinion = (net.getNode(i).getNodeOpinion()[changeIndex] + 1 + rnd.nextInt(2)+1) % 3 - 1;
+				de = calculateEnergyChange(net, i, newOpinion, changeIndex);
+				
+				if(de < 0) {
+					net.getNode(i).setOneNodeOpinion(changeIndex, newOpinion);
+					e += de;
+				}
+				else if(Math.exp(- beta * de) > rnd.nextDouble()) {
+					net.getNode(i).setOneNodeOpinion(changeIndex, newOpinion);
+					e += de;
+				}
+				if((j+1) % 10000 == 0)
+					currentSimilarity = getNeighoursAverageSimilarity();
+				j++;
+			}
+			System.out.println("TAJM: " + j);
+		}
 
 	// Sets random initial opinions for every agent
 	public void setInitialOpinions(Network net) {
@@ -148,6 +182,12 @@ public class Dynamics
 	// Sets Ising initial opinions based on the given time
 	public void setInitialOpinions(int time) {
 		if(time !=0) setInitialOpinions(network, time);
+		else setInitialOpinions(network);
+	}
+	
+	// Set Ising initial opinions based on the similarity
+	public void setInitialOpinions(double sim) {
+		if(sim !=0 ) setInitialOpinions(network, sim);
 		else setInitialOpinions(network);
 	}
 	
