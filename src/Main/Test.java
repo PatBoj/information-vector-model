@@ -188,4 +188,8 @@ public class Test
 	    return X;
 	}
 	 */
+	
+	public void testAverageIsingAgain() {
+		
+	}
 }
