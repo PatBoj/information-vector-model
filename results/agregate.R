@@ -4,12 +4,12 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 params <- 11 # number of saved parameters
 breaks <- 220 # number of bins on histogram
-dirName <- "26_05_2021/" # directory where scripts looks for files
+dirName <- "tests/" # directory where scripts looks for files
 fileNames <- list.files(dirName) # all filenames in the directory
 
 realizations <- max(gsub("(^\\D+)([0-9]+)(.*)", "\\2", fileNames)) # number of independent realizations
 trimmedFileNames <- gsub("(^\\D+)([0-9]+)(.*)", "\\1\\3", fileNames) # trimmed file names (without realization number)
-trimmedFileNames <- trimmedFileNames[duplicated(trimmedFileNames)] # delete duplicates
+trimmedFileNames <- unique(trimmedFileNames) # delete duplicates
 
 # Groups every independent realization into one element in the list
 filesGroups <- lapply(trimmedFileNames, function(x) {
@@ -101,4 +101,6 @@ for(i in 1:length(filesGroups)) {
   })
     
   close(newFile)
+  
+  print(paste(round(i/length(filesGroups) * 100, digits=2), "%", sep="", collapse=""))
 }
