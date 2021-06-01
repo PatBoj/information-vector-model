@@ -138,7 +138,7 @@ public class Dynamics
 			double currentSimilarity = 0;
 			int j = 0;
 			
-			while((currentSimilarity < sim - 0.1 || currentSimilarity > sim + 0.1) & currentSimilarity <= 0.8) {
+			while((currentSimilarity < sim - 0.01 || currentSimilarity > sim + 0.01) & currentSimilarity <= 0.8) {
 				i = rnd.nextInt(N);
 				changeIndex = rnd.nextInt(D);
 				newOpinion = (net.getNode(i).getNodeOpinion()[changeIndex] + 1 + rnd.nextInt(2)+1) % 3 - 1;
@@ -152,11 +152,10 @@ public class Dynamics
 					net.getNode(i).setOneNodeOpinion(changeIndex, newOpinion);
 					e += de;
 				}
-				if((j+1) % 10000 == 0)
+				if((j+1) % 1000 == 0)
 					currentSimilarity = getNeighoursAverageSimilarity();
 				j++;
 			}
-			System.out.println("TAJM: " + j);
 		}
 
 	// Sets random initial opinions for every agent

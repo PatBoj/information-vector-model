@@ -33,7 +33,7 @@ public class Experiments implements Runnable {
 		
 		N = 1000;
 		k = 6;
-		timeSteps = 1000000;
+		timeSteps = 10000;
 		dimOpinion = 100;
 		this.pEdit = pEdit;
 		pNewMessage = 0.1;
@@ -115,9 +115,9 @@ public class Experiments implements Runnable {
 		for(int i=0; i<n; i++)
 			tau[i] = -1 + i * dt;
 		
-		double[] sim = new double[] {0.0, 0.2, 0.4, 0.6};
+		double[] sim = new double[] {0, 0.2, 0.4, 0.6};
 		
-		Time.setMaxIterations(4 * sim.length * n * N);
+		Time.setMaxIterations(n * N * 4 * 4);
 		
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		
@@ -143,6 +143,7 @@ public class Experiments implements Runnable {
 		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 		
 		//Mailer.send();
+		t.printDuration();
 		Time.speek();
 	}
 }
