@@ -4,7 +4,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 params <- 11 # number of saved parameters
 breaks <- 80 # number of bins on histogram
-dirName <- "tests/" # directory where scripts looks for files
+dirName <- "26_05_2021/" # directory where scripts looks for files
 fileNames <- list.files(dirName) # all filenames in the directory
 
 realizations <- max(gsub("(^\\D+)([0-9]+)(.*)", "\\2", fileNames)) # number of independent realizations

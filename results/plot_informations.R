@@ -5,23 +5,34 @@ library(shiny)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-params <- 13 # number of parameters
-dirName <- "tests_hist/"
-fileNames <- list.files(dirName)
+dataReader <- function(dirName) {
+  params <- 13 # number of parameters
+  fileNames <- list.files(dirName)
+  
+  rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = TRUE, col.names = c("x", "y", "length", "emotion")))})
+  parameters <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t"))})
+  
+  rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], network_type = rep(parameters[[i]][3,2], nrow(rawData[[i]])))})
+  rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
+  rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], eta = rep(parameters[[i]][5,2], nrow(rawData[[i]])))})
+  rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], type = rep(parameters[[i]][8,2], nrow(rawData[[i]])))})
+  rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], sim = rep(round(as.numeric(parameters[[i]][9,2]), digits=2), nrow(rawData[[i]])))})
+  
+  data <- bind_rows(rawData)
+  data$network_type <- as.factor(data$network_type)
+  data$tau <- as.factor(data$tau)
+  data$eta <- as.factor(data$eta)
+  data$type <- as.factor(data$type)
+  data$sim <- as.factor(data$sim)
+  
+  return(data)
+}
 
-rawData <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), skip = params, sep = "\t", header = TRUE, col.names = c("x", "y", "length", "emotion")))})
-parameters <- lapply(fileNames, function(x) {data.frame(read.table(paste(dirName, x, sep=""), nrows = params, sep = "\t"))})
+competition <- dataReader("26_05_2021_hist/")
+#noCompetition <- dataReader("26_05_2021_other_hist/")
 
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], network_type = rep(parameters[[i]][3,2], nrow(rawData[[i]])))})
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], tau = rep(parameters[[i]][6,2], nrow(rawData[[i]])))})
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], eta = rep(parameters[[i]][5,2], nrow(rawData[[i]])))})
-rawData <- lapply(seq_along(rawData), function(i) {cbind(rawData[[i]], sim = rep(round(as.numeric(parameters[[i]][9,2]), digits=2), nrow(rawData[[i]])))})
-
-data <- bind_rows(rawData)
-data$network_type <- as.factor(data$network_type)
-data$tau <- as.factor(data$tau)
-data$eta <- as.factor(data$eta)
-data$sim <- as.factor(data$sim)
+#data <- rbind(competition, noCompetition)
+data <- competition
 
 popularityHistogram <- function(histogram) {
   plot <- ggplot(data = histogram, aes(x = x, y = y, color = network_type, shape = eta, fill = emotion, size = length)) + 
@@ -72,7 +83,7 @@ ui <- fluidPage(
       checkboxGroupInput("competition", "With competition",
                          c("Yes" = "with_competition",
                            "No" = "without_competition")),
-      sliderInput("tau", "Threshold", min = -1, max = 1, step = 0.01, value = 0.0),
+      sliderInput("tau", "Threshold", min = -1, max = 1, step = 0.02, value = 0.0),
       sliderInput("sim", "Similarity", min = 0, max = 0.6, step = 0.2, value = 0.0)
     ),
     
@@ -88,7 +99,8 @@ server <- function(input, output) {
       filter(network_type %in% input$types,
              tau == format(as.numeric(input$tau), nsmall = 1),
              eta %in% input$edit,
-             sim %in% input$sim)
+             sim %in% input$sim,
+             type %in% input$competition)
   })
   
   output$my_histogram <- renderPlot({

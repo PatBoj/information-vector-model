@@ -138,7 +138,7 @@ public class Dynamics
 			double currentSimilarity = 0;
 			int j = 0;
 			
-			while((currentSimilarity < sim - 0.01 || currentSimilarity > sim + 0.01) & currentSimilarity <= 0.8) {
+			while((currentSimilarity < sim - 0.005 || currentSimilarity > sim + 0.005) & currentSimilarity <= 0.8) {
 				i = rnd.nextInt(N);
 				changeIndex = rnd.nextInt(D);
 				newOpinion = (net.getNode(i).getNodeOpinion()[changeIndex] + 1 + rnd.nextInt(2)+1) % 3 - 1;
