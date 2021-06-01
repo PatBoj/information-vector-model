@@ -31,9 +31,9 @@ public class Experiments implements Runnable {
 	Experiments(int id, double tau, String topologyType, double pEdit, int realisations, double sim) {
 		this.id = id;
 		
-		N = 1000;
+		N = 600;
 		k = 6;
-		timeSteps = 10000;
+		timeSteps = 500000;
 		dimOpinion = 100;
 		this.pEdit = pEdit;
 		pNewMessage = 0.1;
@@ -66,8 +66,8 @@ public class Experiments implements Runnable {
 	}
 	
 	public static void runExperiment() throws InterruptedException {
-		int N = 2;
-		double dt = 0.5;
+		int N = 10;
+		double dt = 0.2;
 		int n = (int)(2/dt+1);
 		
 		double[] tau = new double[n];
@@ -103,6 +103,46 @@ public class Experiments implements Runnable {
 		
 		//Mailer.send();
 		Time.speek();
+	}
+	
+	public static void runExperimentNoCompetition() throws InterruptedException {
+		int N = 10;
+		double dt = 0.02;
+		int n = (int)(2/dt+1);
+
+		double[] tau = new double[n];
+		for(int i=0; i<n; i++)
+			tau[i] = -1 + i * dt;
+
+		Time.setMaxIterations(4 * n * N);
+		
+		double[] sim = new double[] {0.0, 0.2, 0.4, 0.6};
+
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		
+		for(int k=0; k<4; k++) {
+			for(int i=0; i<n; i++)
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0, N, sim[k]));
+		
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, N, sim[k]));
+		
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0, N, sim[k]));
+		
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, sim[k]));
+		}
+
+		executor.shutdown();
+		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+		Mailer.send();
+		//Time.speek();
 	}
 	
 	public static void test() throws InterruptedException {

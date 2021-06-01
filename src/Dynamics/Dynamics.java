@@ -527,6 +527,65 @@ public class Dynamics
 		}
 	}
 	
+	private void oneStepCompetition(int node, int time) {
+		boolean alreadyShared; // true if message with this ID was shared by agent
+		double cosineSimilarity; // cosine similarity between message and node opinion
+		boolean isIdentical; // true if the message is the same as agents's opinion
+		int[][] newContent; // new message content
+
+		// Checks if the last neighbor message is similar to the node's opinion vector
+		// this loop is for all messages shared by node's neighbors
+		for(int i=getDashboardSize(node) - 1; i>=0; i--) {
+			cosineSimilarity = cosineSimilarity(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes());
+			// If the agent like it the message goes to next condition
+			if(cosineSimilarity >= cosineThreshold) {
+				alreadyShared = alreadyShared(getNodeSharedIds(node), getDashboard(node).get(i));
+				// Checks if this message was already shared (by ID)
+				if(!alreadyShared) {
+					// Message can be edit before sharing
+					// but if it's matching the node's opinion it shouldn't be changed
+					if(rnd.nextDouble() < pEdit) {
+						double randomChance = rnd.nextDouble();
+						isIdentical = isIdentical(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes());
+						//editID++;
+
+						// Delete information
+						// if of curse length of the message is greater than 1
+						if(!isIdentical && randomChance < pDeleteOneBit && getDashboard(node).get(i).getMessageContentAndIndexes()[0].length > 1) {
+							newContent = deleteOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
+							//edit = "del" + editID;
+						}
+						// Change information
+						else if (!isIdentical && randomChance < pDeleteOneBit + pChangeOneBit) {
+							newContent = changeOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes(), cosineSimilarity).clone();
+							//edit = "chg" + editID;
+						}
+						// Add new information
+						else if(randomChance <= pDeleteOneBit + pDeleteOneBit + pChangeOneBit) {
+							newContent = addOneBit(getNodeOpinion(node), getDashboard(node).get(i).getMessageContentAndIndexes()).clone();
+							//edit = "add" + editID;
+						}
+						// Else throw an error
+						else 
+							throw new Error("Something wrong with probabilities of changing, deleting and adding new pice of information.");
+					}
+					else newContent = getDashboard(node).get(i).getMessageContentAndIndexes().clone();
+					messages.add(new Message(newContent.clone(), time, getDashboard(node).get(i).getId()));
+					//getLastMessage().addEdit(getDashboard(node).get(i).getEdit());
+					//if(edit != "") getLastMessage().addEdit(edit);
+
+					setMessage(node, getLastMessage());
+					setDashboard(node, getLastMessage());
+					saveDataToArray();
+					//break; // COMMENT IT IF YOU WANT TO EXCLUDE COMPETITION
+				}
+					//else getDashboard(node).remove(i);
+			}
+			//else getDashboard(node).remove(i);
+		}
+		getDashboard(node).clear(); // NON COMMENT IT IF YOU WANT TO EXCLUDE COMPETITION
+	}
+	
 	// Runs entire simulation
 	public void run(int maxTime) {
 		dataToSave = new double[3][maxTime];
@@ -541,6 +600,9 @@ public class Dynamics
 		for(int i=0; i<maxTime; i++) {
 			oneStep(i+1);
 		}
+		
+		//for(int i=0; i<10000; i++)
+		//	oneStepCompetition(i % N, maxTime+1+i);
 	}
 	
 	public void saveHeader(Save s) {
