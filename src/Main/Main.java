@@ -12,7 +12,7 @@ import ProgramingTools.Tools;
 
 public class Main {
 	public static void main(String args[]) throws InterruptedException {
-		Experiments.runExperiment();
+		Experiments.runExperimentNoCompetition();
 		
 		/* Test t = new Test();
 		

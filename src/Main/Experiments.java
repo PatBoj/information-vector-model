@@ -33,7 +33,7 @@ public class Experiments implements Runnable {
 		
 		N = 1000;
 		k = 6;
-		timeSteps = 1000000;
+		timeSteps = 50000;
 		dimOpinion = 100;
 		this.pEdit = pEdit;
 		pNewMessage = 0.1;
@@ -51,7 +51,7 @@ public class Experiments implements Runnable {
 			net = new ScaleFreeNetwork(N, k/2);
 		
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit, threshold);
-		String folder = "results/26_05_2021/";
+		String folder = "results/26_05_2021_no-competition/";
 		Save s = new Save(folder + net.getTopologyType() + "_" + id + "_tau_" + Tools.convertToString(threshold) + (pEdit == 0 ? "_non_" : "_all_") + initialTime + ".txt");
 		
 		dyn.setInitialOpinions(initialTime);
@@ -66,8 +66,8 @@ public class Experiments implements Runnable {
 	}
 	
 	public static void runExperiment() throws InterruptedException {
-		int N = 2;
-		double dt = 0.5;
+		int N = 20;
+		double dt = 0.01;
 		int n = (int)(2/dt+1);
 		
 		double[] tau = new double[n];
@@ -97,6 +97,41 @@ public class Experiments implements Runnable {
 				for(int j=0 ; j<N; j++)
 					executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, times[1][k]));
 		}
+		
+		executor.shutdown();
+		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		
+		Mailer.send();
+		//Time.speek();
+	}
+	
+	public static void runExperimentNoCompetition() throws InterruptedException {
+		int N = 20;
+		double dt = 0.01;
+		int n = (int)(2/dt+1);
+		
+		double[] tau = new double[n];
+		for(int i=0; i<n; i++)
+			tau[i] = -1 + i * dt;
+		
+		Time.setMaxIterations(4 * n * N);
+		
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		for(int i=0; i<n; i++)
+			for(int j=0 ; j<N; j++)
+				executor.execute(new Experiments(j+1, tau[i], "ER", 0, N, 0));
+		
+		for(int i=0; i<n; i++) 
+			for(int j=0 ; j<N; j++)
+				executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, N, 0));
+		
+		for(int i=0; i<n; i++) 
+			for(int j=0 ; j<N; j++)
+				executor.execute(new Experiments(j+1, tau[i], "BA", 0, N, 0));
+		
+		for(int i=0; i<n; i++) 
+			for(int j=0 ; j<N; j++)
+				executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, 0));
 		
 		executor.shutdown();
 		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
