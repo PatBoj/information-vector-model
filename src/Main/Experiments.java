@@ -23,12 +23,12 @@ public class Experiments implements Runnable {
 	private double pNewMessage;
 	private int realisations;
 	private double threshold;
-	private int initialTime;
+	private double sim;
 	
 	private String topologyType;
 	private Network net;
 	
-	Experiments(int id, double tau, String topologyType, double pEdit, int realisations, int initialTime) {
+	Experiments(int id, double tau, String topologyType, double pEdit, int realisations, double sim) {
 		this.id = id;
 		
 		N = 1000;
@@ -39,7 +39,7 @@ public class Experiments implements Runnable {
 		pNewMessage = 0.1;
 		this.realisations = realisations;
 		threshold = tau;
-		this.initialTime = initialTime;
+		this.sim = sim;
 		this.topologyType = topologyType;
 		net = new Network();
 	}
@@ -52,9 +52,9 @@ public class Experiments implements Runnable {
 		
 		Dynamics dyn = new Dynamics(net, dimOpinion, pNewMessage, pEdit, threshold);
 		String folder = "results/26_05_2021/";
-		Save s = new Save(folder + net.getTopologyType() + "_" + id + "_tau_" + Tools.convertToString(threshold) + (pEdit == 0 ? "_non_" : "_all_") + initialTime + ".txt");
+		Save s = new Save(folder + net.getTopologyType() + "_" + id + "_tau_" + Tools.convertToString(threshold) + (pEdit == 0 ? "_non_" : "_all_") + Tools.convertToString(sim, 1) + ".txt");
 		
-		dyn.setInitialOpinions(initialTime);
+		dyn.setInitialOpinions(sim);
 		dyn.saveParameters(s, "with_competition", realisations, timeSteps);
 		
 		dyn.run(timeSteps);
@@ -74,34 +74,75 @@ public class Experiments implements Runnable {
 		for(int i=0; i<n; i++)
 			tau[i] = -1 + i * dt;
 		
-		int[][] times = new int[][] {{0, 60000, 225000, 555000}, {0, 20000, 45000, 95000}};
+		double[] sim = new double[] {0.0, 0.2, 0.4, 0.6};
 		
-		Time.setMaxIterations(4 * times[0].length * n * N);
+		Time.setMaxIterations(4 * sim.length * n * N);
 		
 		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		
 		for(int k=0; k<4; k++) {
 			for(int i=0; i<n; i++)
 				for(int j=0 ; j<N; j++)
-					executor.execute(new Experiments(j+1, tau[i], "ER", 0, N, times[0][k]));
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0, N, sim[k]));
 		
 			for(int i=0; i<n; i++) 
 				for(int j=0 ; j<N; j++)
-					executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, N, times[0][k]));
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, N, sim[k]));
 		
 			for(int i=0; i<n; i++) 
 				for(int j=0 ; j<N; j++)
-					executor.execute(new Experiments(j+1, tau[i], "BA", 0, N, times[1][k]));
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0, N, sim[k]));
 		
 			for(int i=0; i<n; i++) 
 				for(int j=0 ; j<N; j++)
-					executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, times[1][k]));
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, sim[k]));
 		}
 		
 		executor.shutdown();
 		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 		
-		Mailer.send();
-		//Time.speek();
+		//Mailer.send();
+		Time.speek();
+	}
+	
+	public static void test() throws InterruptedException {
+		Time t = new Time();
+		int N = 2;
+		double dt = 0.5;
+		int n = (int)(2/dt+1);
+		
+		double[] tau = new double[n];
+		for(int i=0; i<n; i++)
+			tau[i] = -1 + i * dt;
+		
+		double[] sim = new double[] {0.0, 0.2, 0.4, 0.6};
+		
+		Time.setMaxIterations(4 * sim.length * n * N);
+		
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		
+		for(int k=0; k<4; k++) {
+			for(int i=0; i<n; i++)
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0, N, sim[k]));
+		
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "ER", 0.05, N, sim[k]));
+		
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0, N, sim[k]));
+		
+			for(int i=0; i<n; i++) 
+				for(int j=0 ; j<N; j++)
+					executor.execute(new Experiments(j+1, tau[i], "BA", 0.05, N, sim[k]));
+		}
+		
+		executor.shutdown();
+		executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		
+		//Mailer.send();
+		Time.speek();
 	}
 }

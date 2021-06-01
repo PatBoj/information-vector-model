@@ -15,7 +15,7 @@ data <- bind_rows(er, ba)
 data <- data.frame(
   data %>%
     group_by(time, topology) %>%
-    summarise(average = mean(avg), deviation = sd(avg)/sqrt(20))
+    summarise(average = mean(avg), deviation = sd(avg))
 )
 
 averageSimilarity <- function(data) {
@@ -36,7 +36,7 @@ averageSimilarity <- function(data) {
       legend.spacing.y = unit(0, "mm")
     ) + 
     xlab("time") +
-    ylab("cosine similarity between agents") 
+    ylab("cosine similarity between agents")
   plot
 }
 

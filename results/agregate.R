@@ -3,7 +3,7 @@ library(dplyr)
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 params <- 11 # number of saved parameters
-breaks <- 220 # number of bins on histogram
+breaks <- 80 # number of bins on histogram
 dirName <- "tests/" # directory where scripts looks for files
 fileNames <- list.files(dirName) # all filenames in the directory
 
@@ -36,7 +36,21 @@ for(i in 1:length(filesGroups)) {
   })
   
   rawData <- bind_rows(rawData) # binds every realization into one dataframe
-  parameters <- parameters[[1]] # uses only first element of the list as parameter (they are mostly the same)
+  averageParameters <- parameters[[1]]
+  
+  degree <- sapply(parameters, function(x) {
+    x[2,2]
+  })
+  
+  sim <- sapply(parameters, function(x) {
+    x[9,2]
+  })
+  
+  averageParameters[2, 2] <- mean(as.numeric(degree))
+  averageParameters[9, 2] <- mean(as.numeric(sim))
+  
+  averageParameters <- rbind(averageParameters, c("SD <k>", sd(as.numeric(degree)), "Standard deviation from average degree"))
+  averageParameters <- rbind(averageParameters, c("SD of similarity", sd(as.numeric(sim)), "Standard deviation from average similarity of the agents"))
   
   # Creates histogram of those raw data, but already in log10 scale
   tempHist <- hist(log10(rawData[[1]]),
@@ -86,13 +100,13 @@ for(i in 1:length(filesGroups)) {
   trimmed <- gsub("(\\D+)(__)(.*)(\\.txt)", "\\1_\\3_hist\\4", trimmedFileNames[i]) # add hist to new files
   newFile <- file(paste(gsub("/", "", dirName), "_hist/", trimmed, sep=""), open = "wt") # create new file
     
-  apply(parameters, MARGIN=1, function(x) {
+  apply(averageParameters, MARGIN=1, function(x) {
     writeLines(paste(x, collapse="\t"), sep="", newFile)
     writeLines("", newFile)
   })
   writeLines("", newFile)
   
-  writeLines(colnames(tempHist), sep="\t", newFile)
+  writeLines(paste(colnames(tempHist), collapse="\t"), sep="", newFile)
   writeLines("", newFile)
   
   apply(tempHist, MARGIN=1, function(x) {
